@@ -36,19 +36,7 @@ vm-vision-skills
 | ↳ `vtune-analyzer` | Intel VTune CPU热点分析 |
 | ↳ `perfview-analyzer` | PerfView + xperf非托管内存分析 |
 
-## 一键安装
-
-在 Claude Code 中依次运行以下两条命令：
-
-```bash
-# 步骤1：添加市场源
-/plugin marketplace add CV-China/vm-vision-skills
-
-# 步骤2：安装插件
-/plugin install vm-vision-skills
-```
-
-或者手动安装：
+## 安装
 
 ```bash
 # 1. 克隆仓库
@@ -58,6 +46,22 @@ git clone https://github.com/CV-China/vm-vision-skills.git
 cp -r vm-vision-skills/skills/* "$HOME/.claude/skills/"
 
 # 3. 重启 Claude Code 即可生效
+```
+
+安装后 `~/.claude/skills/` 目录结构：
+
+```
+skills/
+├── 2d-vision-guidance-expert/   # 每个技能一个文件夹
+├── perfview-analyzer/
+├── vm-algorithm-module-builder/
+├── vm-comprehensive-optimizer/
+├── vm-execution-time-analyzer/
+├── vm-script-protection/
+├── vm-script-tutor/
+├── vm-sol-format/
+├── vm-sol-structure/
+└── vtune-analyzer/
 ```
 
 ## 触发关键词
@@ -97,6 +101,9 @@ cp -r vm-vision-skills/skills/* "$HOME/.claude/skills/"
 
 ### perfview-analyzer（PerfView内存分析）
 `PerfView` `内存分析` `非托管内存` `ETW` `内存泄漏` `内存占用` `内存增长` `内存热点` `哪个模块占内存` `托管堆` `GC分析` `VirtAlloc` `xperf` `perfview analyze` `PerfView profile` `native memory`
+
+> ⚠️ **已知问题**：`/plugin marketplace add` 在 Windows 上对大仓库存在 rename 竞态 Bug（EPERM），
+> 详见 [DEPLOY.md](DEPLOY.md) 第二节。不影响手动安装方式。
 
 ## 依赖要求
 

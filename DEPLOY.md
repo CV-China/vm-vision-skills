@@ -56,22 +56,6 @@ git push -u origin main
 
 ## 二、用户安装（首次）
 
-### 方式A：一键安装（推荐）
-
-在 Claude Code 中依次运行以下两条命令：
-
-```
-# 步骤1：添加市场源
-/plugin marketplace add CV-China/vm-vision-skills
-
-# 步骤2：安装插件
-/plugin install vm-vision-skills
-```
-
-Claude Code 会自动克隆仓库、注册技能，安装完成后即可使用。
-
-### 方式B：手动安装
-
 ```bash
 # 1. 克隆仓库
 git clone https://github.com/CV-China/vm-vision-skills.git
@@ -98,6 +82,12 @@ skills/
 ```
 
 每个技能文件夹包含一个 `SKILL.md`（含 YAML 头部元数据），Claude Code 启动时会自动扫描 `skills/` 目录并加载。
+
+> ⚠️ **为何不用 `/plugin install`？**  
+> Claude Code 2.1.195 在 Windows 上执行 `/plugin marketplace add` 时存在 rename 竞态 Bug：  
+> 大仓库（本仓库 400+ 文件）clone 后 rename 临时目录时触发 `EPERM: operation not permitted`。  
+> 这是 Claude Code 内部 Node.js `fs.rename()` 在 Windows 上的已知问题（文件数多时 Defender/Git 锁未释放），  
+> 非本仓库配置问题。等待 Claude Code 修复此 Bug 后可恢复插件市场安装方式。
 
 ### 安装后验证
 
@@ -184,41 +174,19 @@ git tag v1.1.0
 git push origin v1.1.0
 ```
 
-用户可以通过指定版本安装：先 `/plugin marketplace add CV-China/vm-vision-skills`，再 `/plugin install vm-vision-skills@v1.1.0`
-
 ---
 
 ## 四、用户更新（已有安装）
 
-### 方式A：自动检查更新
-
-Claude Code会定期检查已安装插件的更新。当检测到新版本时，会自动提示。
-
-### 方式B：手动强制更新
-
-在Claude Code中：
-
-```
-/plugin update vm-vision-skills
-```
-
-或重新安装（会覆盖）：
-
-```
-/plugin marketplace add CV-China/vm-vision-skills
-/plugin install vm-vision-skills
-```
-
-### 方式C：Git手动拉取
-
 ```bash
-# 找到插件安装路径（通常在 ~/.claude/plugins/marketplaces/ 下）
-cd ~/.claude/plugins/marketplaces/vm-vision-skills
-
-# 拉取最新代码
+# 1. 重新拉取最新代码
+cd vm-vision-skills
 git pull
 
-# 重启Claude Code
+# 2. 重新复制技能到 skills 目录
+cp -r skills/* "$HOME/.claude/skills/"
+
+# 3. 重启 Claude Code
 ```
 
 ---
@@ -228,7 +196,8 @@ git pull
 ```
 vm-vision-skills-plugin/         ← Git仓库根目录
 ├── .claude-plugin/
-│   └── plugin.json              ← 插件清单（必选）
+│   ├── plugin.json              ← 插件清单（必选）
+│   └── marketplace.json         ← 市场清单（必选）
 ├── skills/                      ← 技能目录（必选）
 │   ├── <skill-1>/
 │   │   ├── SKILL.md             ← 技能定义（必选）
