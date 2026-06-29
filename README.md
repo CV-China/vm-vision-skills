@@ -38,10 +38,14 @@ vm-vision-skills
 
 ## 一键安装
 
-在Claude Code中运行以下命令：
+在 Claude Code 中依次运行以下两条命令：
 
 ```bash
-/plugin install github:CV-China/vm-vision-skills
+# 步骤1：添加市场源
+/plugin marketplace add github:CV-China/vm-vision-skills
+
+# 步骤2：安装插件
+/plugin install vm-vision-skills
 ```
 
 或者手动安装：
