@@ -39,7 +39,7 @@ vm-vision-skills
 ## 安装
 
 ```bash
-cd ~/.claude/skills
+cd %USERPROFILE%\.claude\skills
 git clone https://github.com/CV-China/vm-vision-skills.git
 ```
 
@@ -48,7 +48,7 @@ git clone https://github.com/CV-China/vm-vision-skills.git
 ## 更新
 
 ```bash
-cd ~/.claude/skills/vm-vision-skills
+cd %USERPROFILE%\.claude\skills\vm-vision-skills
 git pull
 ```
 

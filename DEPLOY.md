@@ -57,7 +57,7 @@ git push -u origin main
 ## 二、用户安装（首次）
 
 ```bash
-cd ~/.claude/skills
+cd %USERPROFILE%\.claude\skills
 git clone https://github.com/CV-China/vm-vision-skills.git
 ```
 
@@ -157,7 +157,7 @@ git push origin v1.1.0
 ## 四、用户更新（已有安装）
 
 ```bash
-cd ~/.claude/skills/vm-vision-skills
+cd %USERPROFILE%\.claude\skills\vm-vision-skills
 git pull
 ```
 

@@ -3,7 +3,7 @@
 **📦 安装：**
 
 ```
-cd ~/.claude/skills
+cd %USERPROFILE%\.claude\skills
 git clone https://github.com/CV-China/vm-vision-skills.git
 ```
 
@@ -16,7 +16,7 @@ git clone https://github.com/CV-China/vm-vision-skills.git
 **🔄 后续更新：**
 
 ```
-cd ~/.claude/skills/vm-vision-skills
+cd %USERPROFILE%\.claude\skills\vm-vision-skills
 git pull
 ```
 
