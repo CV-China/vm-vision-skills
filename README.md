@@ -39,30 +39,16 @@ vm-vision-skills
 ## 安装
 
 ```bash
-# 1. 克隆仓库
-git clone https://github.com/CV-China/vm-vision-skills.git
+# 1. 进入 Claude Code skills 目录
+cd %USERPROFILE%\.claude\skills
 
-# 2. 将 skills 子目录下的所有技能文件夹复制到 Claude Code skills 目录
-cp -r vm-vision-skills/skills/* "$HOME/.claude/skills/"
+# 2. 克隆仓库
+git clone https://github.com/CV-China/vm-vision-skills.git
 
 # 3. 重启 Claude Code 即可生效
 ```
 
-安装后 `~/.claude/skills/` 目录结构：
-
-```
-skills/
-├── 2d-vision-guidance-expert/   # 每个技能一个文件夹
-├── perfview-analyzer/
-├── vm-algorithm-module-builder/
-├── vm-comprehensive-optimizer/
-├── vm-execution-time-analyzer/
-├── vm-script-protection/
-├── vm-script-tutor/
-├── vm-sol-format/
-├── vm-sol-structure/
-└── vtune-analyzer/
-```
+> 💡 直接在 skills 目录下 clone，Claude Code 启动时自动递归扫描所有 `SKILL.md`，无需额外复制。
 
 ## 触发关键词
 

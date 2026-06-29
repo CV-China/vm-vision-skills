@@ -57,32 +57,17 @@ git push -u origin main
 ## 二、用户安装（首次）
 
 ```bash
-# 1. 克隆仓库
-git clone https://github.com/CV-China/vm-vision-skills.git
+# 1. 进入 Claude Code skills 目录
+cd %USERPROFILE%\.claude\skills
 
-# 2. 将 skills 子目录下的所有技能文件夹复制到 Claude Code skills 目录
-cp -r vm-vision-skills/skills/* "$HOME/.claude/skills/"
+# 2. 克隆仓库
+git clone https://github.com/CV-China/vm-vision-skills.git
 
 # 3. 重启 Claude Code 即可生效
 ```
 
-安装后 `~/.claude/skills/` 目录结构：
-```
-skills/
-├── 2d-vision-guidance-expert/   # 每个技能一个文件夹
-├── perfview-analyzer/
-├── vm-algorithm-module-builder/
-├── vm-comprehensive-optimizer/
-├── vm-execution-time-analyzer/
-├── vm-script-protection/
-├── vm-script-tutor/
-├── vm-sol-format/
-├── vm-sol-structure/
-└── vtune-analyzer/
-```
-
-每个技能文件夹包含一个 `SKILL.md`（含 YAML 头部元数据），Claude Code 启动时会自动扫描 `skills/` 目录并加载。
-
+> 💡 直接在 skills 目录下 clone，Claude Code 启动时自动递归扫描所有 `SKILL.md`，无需额外复制。
+>
 > ⚠️ **为何不用 `/plugin install`？**  
 > Claude Code 2.1.195 在 Windows 上执行 `/plugin marketplace add` 时存在 rename 竞态 Bug：  
 > 大仓库（本仓库 400+ 文件）clone 后 rename 临时目录时触发 `EPERM: operation not permitted`。  
@@ -179,14 +164,11 @@ git push origin v1.1.0
 ## 四、用户更新（已有安装）
 
 ```bash
-# 1. 重新拉取最新代码
-cd vm-vision-skills
+# 1. 进入仓库目录，拉取最新代码
+cd %USERPROFILE%\.claude\skills\vm-vision-skills
 git pull
 
-# 2. 重新复制技能到 skills 目录
-cp -r skills/* "$HOME/.claude/skills/"
-
-# 3. 重启 Claude Code
+# 2. 重启 Claude Code
 ```
 
 ---
