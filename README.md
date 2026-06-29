@@ -38,17 +38,35 @@ vm-vision-skills
 
 ## 安装
 
+**Windows（CMD）：**
+
 ```bash
-# 1. 进入 Claude Code skills 目录
 cd %USERPROFILE%\.claude\skills
-
-# 2. 克隆仓库
 git clone https://github.com/CV-China/vm-vision-skills.git
-
-# 3. 重启 Claude Code 即可生效
 ```
 
-> 💡 直接在 skills 目录下 clone，Claude Code 启动时自动递归扫描所有 `SKILL.md`，无需额外复制。
+**Mac / Linux：**
+
+```bash
+cd ~/.claude/skills
+git clone https://github.com/CV-China/vm-vision-skills.git
+```
+
+重启 Claude Code 即可生效。启动时自动递归扫描 `skills/` 目录下所有 `SKILL.md`。
+
+## 更新
+
+```bash
+# Windows（CMD）
+cd %USERPROFILE%\.claude\skills\vm-vision-skills
+git pull
+
+# Mac / Linux
+cd ~/.claude/skills/vm-vision-skills
+git pull
+```
+
+拉取后重启 Claude Code 即可加载最新技能。
 
 ## 触发关键词
 
@@ -88,15 +106,16 @@ git clone https://github.com/CV-China/vm-vision-skills.git
 ### perfview-analyzer（PerfView内存分析）
 `PerfView` `内存分析` `非托管内存` `ETW` `内存泄漏` `内存占用` `内存增长` `内存热点` `哪个模块占内存` `托管堆` `GC分析` `VirtAlloc` `xperf` `perfview analyze` `PerfView profile` `native memory`
 
-> ⚠️ **已知问题**：`/plugin marketplace add` 在 Windows 上对大仓库存在 rename 竞态 Bug（EPERM），
-> 详见 [DEPLOY.md](DEPLOY.md) 第二节。不影响手动安装方式。
-
 ## 依赖要求
 
 - **vm-script-protection**: 需要 .NET Framework 4.6.1+ Runtime，CLI工具已打包在 `tools/` 目录中
 - **vtune-analyzer**: 需要安装Intel VTune Profiler
 - **perfview-analyzer**: 需要安装PerfView和Windows Performance Toolkit (xperf)
 - 部分技能涉及Windows专属工具，建议在Windows环境下使用
+
+## 已知问题
+
+`/plugin marketplace add` 在 Windows 上对本仓库（400+ 文件）存在 rename 竞态 Bug，clone 后临时目录重命名时触发 `EPERM: operation not permitted`。这是 Claude Code 2.1.195 内部 Node.js `fs.rename()` 在 Windows 上的已知问题，非本仓库配置问题。不影响上述手动安装方式。详见 [DEPLOY.md](DEPLOY.md) 第二节。
 
 ## 维护指南
 
