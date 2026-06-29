@@ -14,7 +14,7 @@
 1. 打开 https://github.com/new
 2. 填写仓库信息：
    - **Repository name**: `vm-vision-skills`
-   - **Description**: `VisionMaster 机器视觉全能工具包 — Claude Code 插件，包含 10 个 VM 技能`
+   - **Description**: `VisionMaster机器视觉全能工具包 — Claude Code 插件，包含 10 个 VM 技能`
    - **Public**（公开仓库）
    - ⚠️ **不要**勾选 "Add a README file"（已有）
    - ⚠️ **不要**勾选 ".gitignore"（已有）

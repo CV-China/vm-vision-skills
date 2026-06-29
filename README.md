@@ -1,6 +1,6 @@
 # VM Vision Skills
 
-VisionMaster机器视觉全能工具包 —— 海康机器人 VisionMaster 用户的瑞士军刀。
+VisionMaster机器视觉全能工具包 —— 海康机器人 VM 用户的一站式技能套件。
 
 ## 技能架构
 
