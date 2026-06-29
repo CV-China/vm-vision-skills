@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>单相机偏心抓取角度越大偏差越大 — VM视觉诊断</title>
+<style>
+*{box-sizing:border-box}body{font-family:-apple-system,'Microsoft YaHei',sans-serif;max-width:960px;margin:0 auto;padding:20px;background:#f5f7fa;color:#333;line-height:1.6}.header{background:linear-gradient(135deg,#c62828,#b71c1c);color:#fff;padding:22px 28px;border-radius:12px;margin-bottom:20px}.header h1{margin:0 0 4px;font-size:20px}.header .sub{font-size:13px;opacity:.8}.card{background:#fff;border-radius:10px;padding:20px 24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}.card h2{margin:0 0 14px;font-size:16px;color:#c62828;padding-bottom:8px;border-bottom:2px solid #fce8e6}.card h3{font-size:14px;color:#555;margin:14px 0 8px}.phase{border-left:4px solid;padding:12px 16px;margin-bottom:10px;border-radius:0 6px 6px 0}.pc{border-color:#1a73e8;background:#f0f4ff}.pt{border-color:#0f9d58;background:#f0faf3}.pp{border-color:#f57c00;background:#fff8f0}.ph{font-weight:700;font-size:14px;margin-bottom:8px}.pc .ph{color:#1a73e8}.pt .ph{color:#0f9d58}.pp .ph{color:#f57c00}.flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:8px 0}.fb{padding:7px 11px;border-radius:6px;font-size:12px;text-align:center;min-width:68px;line-height:1.4;border:1.5px solid}.fb-b{background:#e8f0fe;border-color:#4285f4;color:#1a73e8}.fb-g{background:#e6f4ea;border-color:#34a853;color:#188038}.fb-o{background:#fef3e2;border-color:#fbbc04;color:#e37400}.fb-r{background:#fce8e6;border-color:#ea4335;color:#c5221f}.fa{color:#aaa;font-size:16px}.steps{list-style:none;padding:0;margin:0}.steps li{display:flex;gap:10px;margin-bottom:7px;font-size:13px;align-items:flex-start}.sn{background:#c62828;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}.sn-g{background:#0f9d58}.sn-o{background:#f57c00}.cl{list-style:none;padding:0;margin:0}.cl li{padding:7px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;font-size:13px}.cl li::before{content:'☐';color:#c62828;font-size:14px;flex-shrink:0}.warn{background:#fef3e2;border-left:3px solid #f57c00;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}.tip{background:#e6f4ea;border-left:3px solid #0f9d58;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}th{background:#f1f3f4;padding:9px;text-align:left;font-weight:600}td{padding:9px;border-bottom:1px solid #e8eaed;vertical-align:top}tr:last-child td{border-bottom:none}.rl{list-style:none;padding:0;margin:0}.rl li{padding:4px 0;font-size:13px;color:#c62828}.rl li::before{content:'📄 '}.pass{color:#0f9d58;font-weight:700}.fail{color:#c62828;font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- 元信息
+生成时间：2026-05-27 15:21
+模式：问题诊断
+用户原始问题：单相机固定安装抓取场景，角度越大抓取偏差越大；进一步确认为任何角度都偏、且越大越偏
+关键参数：
+  相机数量：单相机
+  安装方式：固定（眼在手外/静止）
+  应用类型：抓取
+  机构类型：XYR（含R轴旋转）
+  共轴/偏心：偏心（工具中心≠R轴旋转中心）
+  标定方式：十二点标定（含旋转中心）
+  标定文件：zuo2.xml（平移旋转标定导出，2023-06-10）
+-->
+
+<div class="header">
+  <h1>单相机偏心抓取角度越大偏差越大</h1>
+  <div class="sub">生成时间：2026-05-27 15:21 &nbsp;·&nbsp; 问题诊断 &nbsp;·&nbsp; VisionMaster</div>
+</div>
+
+<div class="card">
+  <h2>问题诊断摘要</h2>
+  <p><strong>标定数据整体质量差是根因：平移标定本身就不准（让任何角度都偏），旋转角度标定还差了1度、又被偏心工具放大（让角度越大越偏），两者叠加正好对应您的现象。</strong></p>
+  <p>标定文件12项检测有6项不通过。平移标定的像素精度1.43像素、步长极差7.04像素、最大重投影误差2.38像素均超标，说明平移特征点采集或机构平移本身就不稳——这部分误差与角度无关，任何位置、任何角度都存在。旋转环节的物理旋转精度实测1.0度（标准&lt;0.05度），意味着指令转60度、图像实测只有59/61度；由于工具中心偏离R轴旋转中心，这1度的角度误差会乘以偏心半径换算成位置偏移，旋转角度越大、补偿偏差越大。值得注意的是旋转中心拟合本身是合格的（偏差0.82像素），所以根子不在旋转中心位置算错，而在"平移标定基础差 + 旋转角度不准"。</p>
+  <table>
+    <tr><th>诊断项</th><th>内容</th></tr>
+    <tr><td>问题现象</td><td>物料旋转抓取时任何角度都有偏差，且角度越大偏差越大</td></tr>
+    <tr><td>误差数据</td><td>任何角度均偏，偏差随旋转角度增大而单调增大（具体数值待现场补充）</td></tr>
+    <tr><td>系统配置</td><td>单相机固定（眼在手外）+ 偏心工具（工具中心≠R轴旋转中心）+ 十二点标定 + 单点抓取</td></tr>
+    <tr><td>初步原因</td><td>平移标定基础误差（任何角度都偏）+ 物理旋转精度1.0度被偏心半径放大（越大越偏）</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>排查路径</h2>
+  <div class="flow">
+    <span class="fb fb-b">机构及成像</span>
+    <span class="fa">→</span>
+    <span class="fb fb-b">标定过程</span>
+    <span class="fa">→</span>
+    <span class="fb fb-o">示教过程</span>
+    <span class="fa">→</span>
+    <span class="fb fb-o">生产过程</span>
+  </div>
+  <div class="tip">
+    <strong>标定文件分析已完成</strong> — 根因集中在标定环节（平移标定差 + 旋转角度不准），建议优先重做十二点标定，并复核偏心补偿基准。
+  </div>
+</div>
+
+<div class="card">
+  <h2>标定文件分析报告</h2>
+  <p style="font-size:13px;margin:0 0 10px;color:#666;">文件来源：平移旋转标定模块导出（2023-06-10） | 像素当量约 0.0555 mm/像素 | 12项检测中 <span class="fail">6项未通过</span></p>
+  <table>
+    <tr><th>#</th><th>检测项</th><th>实测值</th><th>标准</th><th>判定</th><th>排查方向</th></tr>
+    <tr><td>1</td><td><strong>平移像素精度</strong></td><td><strong>1.43 像素</strong></td><td>&lt; 1 像素</td><td class="fail"><strong>FAIL</strong></td><td>平移标定本身不准，任何角度都偏的来源之一</td></tr>
+    <tr><td>2</td><td>旋转像素精度</td><td>0.11 像素</td><td>&lt; 0.5 像素</td><td class="pass">PASS</td><td>—</td></tr>
+    <tr><td>3</td><td><strong>平移像素步长极差</strong></td><td><strong>7.04 像素</strong></td><td>&lt; 1 像素</td><td class="fail"><strong>FAIL</strong></td><td>九点步长不均匀，机构平移或特征采集不稳</td></tr>
+    <tr><td>4</td><td>平移物理角度极差</td><td>0.0000°</td><td>&lt; 0.01°</td><td class="pass">PASS</td><td>—</td></tr>
+    <tr><td>5</td><td>平移图像角度极差</td><td>0.1000°</td><td>&lt; 0.01°</td><td class="fail">FAIL</td><td>平移过程中图像有轻微旋转（约0.1度）</td></tr>
+    <tr><td>6</td><td>物理平移精度</td><td>0.00001 mm</td><td>&lt; 0.02 mm</td><td class="pass">PASS</td><td>—</td></tr>
+    <tr><td>7</td><td><strong>物理旋转精度</strong></td><td><strong>1.0000°</strong></td><td><strong>&lt; 0.05°</strong></td><td class="fail"><strong>FAIL</strong></td><td><strong>指令旋转角与实测角差约1度，被偏心半径放大——越大越偏的根因</strong></td></tr>
+    <tr><td>8</td><td>角度旋转一致性</td><td>-1</td><td>1 或 -1</td><td class="pass">PASS</td><td>—</td></tr>
+    <tr><td>9</td><td>坐标系左右手一致性</td><td>-1</td><td>1 或 -1</td><td class="pass">PASS</td><td>—</td></tr>
+    <tr><td>10</td><td><strong>平移像素最大误差</strong></td><td><strong>2.38 像素</strong></td><td>&lt; 1 像素</td><td class="fail"><strong>FAIL</strong></td><td>重投影误差大，标定矩阵不够准</td></tr>
+    <tr><td>11</td><td>物理XY轴夹角</td><td>90.22°</td><td>89.8°-90.2°</td><td class="fail">FAIL</td><td>轻微超差，引入小的系统性偏差</td></tr>
+    <tr><td>12</td><td>旋转中心像素偏差度</td><td>0.82 像素</td><td>&lt; 1 像素</td><td class="pass">PASS</td><td>旋转中心拟合合格，不是主因</td></tr>
+  </table>
+  <div class="warn"><strong>关键发现</strong>：第1/3/10项平移标定全部超标，说明平移标定基础就不准——这部分误差与角度无关，对应您说的"任何角度都偏"；第7项物理旋转精度1.0度严重超标（指令转60度、图像实测只有59/61度），因为工具是偏心的，这1度误差要乘以偏心半径换算成位置偏移，所以"旋转角度越大、偏差越大"。两点叠加正好解释了"任何角度都偏、且越大越偏"。旋转中心拟合本身合格（0.82像素），不是主因，重点是把平移标定做干净 + 把旋转角度标准。</div>
+</div>
+
+<div class="card">
+  <h2>排查操作清单</h2>
+
+  <div class="phase pt">
+    <div class="ph">立即检查（5分钟）</div>
+    <ul class="cl">
+      <li>确认本场景标定是按"偏心"配置的十二点标定（含旋转中心），不是按共轴的九点</li>
+      <li>确认平移九点的特征点图像是否清晰、边缘锐利，有无反光、毛刺或对比度不足</li>
+      <li>确认旋转三点采集时机构是否停稳后再拍照，旋转角度间隔是否足够（建议15-30度）</li>
+    </ul>
+  </div>
+
+  <div class="phase pc">
+    <div class="ph">短期排查（当天）</div>
+    <ul class="cl">
+      <li>重做十二点标定：平移九点步长要均匀、覆盖视野1/3以上，把平移像素精度压到1像素内、步长极差压到1像素内</li>
+      <li>旋转三点机构停稳再拍，目标把物理旋转精度从1.0度压到0.05度内（这是"越大越偏"的关键）</li>
+      <li>复核工具偏心量是否已正确标定/示教，偏心补偿的基准是否建立在标定第五点（旋转标定坐标）处</li>
+      <li>标定完成后在标定第五点做验证：让机构转0/15/30度，看输出坐标是否稳定</li>
+    </ul>
+  </div>
+
+  <div class="phase pp">
+    <div class="ph">深度排查（需规划）</div>
+    <ul class="cl">
+      <li>用千分表打表确认R轴旋转时XY方向端跳，排查机械间隙/回程差导致实际旋转角≠指令角（对应第7项）</li>
+      <li>检查相机/镜头安装是否牢固、视野边缘有无畸变（第11项XY轴夹角90.22度轻微超差）</li>
+      <li>复核偏心工具中心的标定方法：绕R轴旋转多个角度拟合工具中心，确认偏心向量准确</li>
+      <li>若重标后仍越大越偏，换陶瓷标定板或更稳定靶标，排除标定板变形因素</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card">
+  <h2>解决方案</h2>
+  <ul class="steps">
+    <li><span class="sn">1</span> <strong>重做十二点标定（最直接）</strong> — 先把平移九点做干净：特征清晰、步长均匀且覆盖视野1/3以上；旋转三点停稳再拍、角度间隔15-30度。目标：平移像素精度&lt;1像素、步长极差&lt;1像素、物理旋转精度&lt;0.05度。</li>
+    <li><span class="sn">2</span> <strong>复核偏心补偿</strong> — 偏心工具下旋转角度误差会按偏心半径放大，务必确认工具中心相对R轴旋转中心的偏心量已正确标定，且偏心补偿基准建立在标定第五点处；基准不对会让大角度持续偏。</li>
+    <li><span class="sn">3</span> <strong>标定后做验证</strong> — 取一已知物料，在0/15/30度分别抓取测坐标，看大角度偏差是否随重标显著下降，同时小角度偏差应一并减小；每角度重复3次取平均。</li>
+    <li><span class="sn">4</span> <strong>若仍越大越偏</strong> — 用千分表查R轴旋转端跳与回程差，确认实际旋转角与指令角一致（对应第7项物理旋转精度1度）。</li>
+  </ul>
+  <div class="tip">
+    <strong>验证方法</strong>：重标后取同一物料，0度抓取测一次坐标，转30度再测一次，看偏差是否回到精度要求内（建议重复性≤精度要求/3）；同时观察小角度偏差是否一并减小，以确认平移标定也改善了。
+  </div>
+</div>
+
+<div class="card">
+  <h2>参考文档</h2>
+  <ul class="rl">
+    <li>标定场景与原理.md — 十二点标定、旋转中心与偏心工具补偿原理</li>
+    <li>单相机常规抓取场景说明文档.md — 单相机抓取标定→示教→生产全流程</li>
+    <li>定位项目误差分析及精度提高.md — 四步排查流程（机构/标定/示教/生产）</li>
+    <li>定位项目异常诊断工具使用说明书.md — VM诊断工具使用及16项检测</li>
+    <li>定位项目CheckList.md — 8大类检查项及判断标准</li>
+  </ul>
+</div>
+
+</body>
+</html>

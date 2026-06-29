@@ -1,0 +1,47 @@
+{
+  "baseSolution": "Template_moduel.sol",
+  "modules": {
+    "标定转换": {
+      "class": "IMVSCalibTransformModu",
+      "from": "双相机纠偏流程/双相机纠偏生产流程_V4.4.0.sol",
+      "module": "双相机纠偏生产流程.标定转换1",
+      "aliases": ["标定转换(主→机构)", "标定转换(辅→机构)", "标定转换(机构→主相机)"]
+    },
+    "点点测量": {
+      "class": "IMVSP2PMeasureModu",
+      "from": "双相机纠偏流程/双相机纠偏生产流程_V4.4.0.sol",
+      "module": "双相机纠偏生产流程.点点测量1",
+      "aliases": []
+    },
+    "图像源": {
+      "class": "ImageSourceModule",
+      "from": "单点抓取流程/单点抓取生产流程_V4.4.0.sol",
+      "module": "单点抓取生产流程.图像源1",
+      "aliases": ["图像源(主相机)", "图像源(辅相机)"]
+    },
+    "直线查找": {
+      "class": "IMVSLineFindModu",
+      "from": "单点抓取流程/单点抓取生产流程_V4.4.0.sol",
+      "module": "单点抓取生产流程.直线查找",
+      "aliases": ["直线查找(角度查找)"]
+    },
+    "四边形查找": {
+      "class": "IMVSQuadrangleFindModu",
+      "from": "单点映射对位流程/两相机映射标定流程_V4.4.0.sol",
+      "module": "两相机映射标定流程.四边形查找1",
+      "aliases": []
+    },
+    "缓存图像": {
+      "class": "ImageBufferModule",
+      "from": "单点映射对位流程/两相机映射标定流程_V4.4.0.sol",
+      "module": "两相机映射标定流程.缓存图像1",
+      "aliases": []
+    },
+    "相机映射": {
+      "class": "IMVSCameraMapModu",
+      "from": "单点映射对位流程/两相机映射标定流程_V4.4.0.sol",
+      "module": "两相机映射标定流程.映射标定",
+      "aliases": []
+    }
+  }
+}

@@ -1,0 +1,111 @@
+{
+  "skill_name": "perfview-analyzer",
+  "description": "Evals focused on unmanaged (C++/native) memory analysis via VirtAlloc events — the skill's primary capability.",
+  "evals": [
+    {
+      "id": 1,
+      "name": "unmanaged-memory-analysis-visionmaster",
+      "prompt": "VisionMaster的内存占用一直在增长，帮我用PerfView分析一下是哪些C++模块在分配内存",
+      "expected_output": "Skill should trigger on 'PerfView' + '内存' + 'C++模块', detect PerfView, find VisionMaster process, confirm unmanaged memory analysis mode, run collection with VirtAlloc enabled, execute xperf -a virtualalloc -images for module-level ranking, and generate a Markdown report with top memory-consuming DLLs/modules.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "unmanaged-memory-by-pid",
+      "prompt": "Analyze unmanaged memory for process ID 12345 with PerfView, I want to know which modules allocate the most native memory",
+      "expected_output": "Skill should trigger, resolve PID 12345, confirm unmanaged memory analysis, run collection with VirtAlloc, use xperf -a virtualalloc -images soc for module-level breakdown, and generate analysis report with allocation hotspots per module.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "perfview-not-found",
+      "prompt": "用PerfView分析一下我的应用的C++内存分配情况",
+      "expected_output": "Skill should trigger on Chinese 'PerfView' + 'C++内存分配', run perfview_detect.ps1. If PerfView is not found, ask user to provide PerfView.exe path or download URL.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "should-not-trigger-general-perf",
+      "prompt": "My application feels slow, what could be the reason? It's a web app with a database backend.",
+      "expected_output": "Skill should NOT trigger. This is a general performance question, not PerfView memory analysis.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "analyze-existing-etl",
+      "prompt": "I have a PerfView .etl.zip trace file, can you analyze the unmanaged memory allocations from it? The file is at C:\\Traces\\myapp.etl.zip",
+      "expected_output": "Skill should trigger, skip collection phase, extract ETL from zip, run xperf -a virtualalloc -images soc and -totals analysis, and generate a Markdown report with module-level memory breakdown.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "chinese-trigger-memory-hotspot",
+      "prompt": "帮我用PerfView定位一下内存热点模块，采集30秒",
+      "expected_output": "Skill should trigger on Chinese 'PerfView' + '内存热点模块', suggest unmanaged memory analysis, verify 30s duration, run VirtAlloc collection, and produce module ranking with xperf -a virtualalloc -images.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "name": "chinese-trigger-cpp-memory",
+      "prompt": "分析C++内存，看看哪个模块占用内存多，用PerfView采集",
+      "expected_output": "Skill should trigger on '分析C++内存' + '哪个模块占用内存多' + 'PerfView', run unmanaged memory analysis workflow with VirtAlloc + VAMap kernel events.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "name": "multi-phase-collection",
+      "prompt": "我想对比VisionMaster在空载、加载方案、运行检测三个阶段的非托管内存变化，用PerfView多阶段采集",
+      "expected_output": "Skill should trigger, suggest multi-phase unmanaged memory collection (3 phases: 空方案/加载方案/运行检测, 30s/30s/60s), execute perfview_unmanaged.ps1 -PhaseName for each phase, run xperf -a virtualalloc -totals comparison, and generate per-phase breakdown report.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "name": "symbol-handling-no-local-cache",
+      "prompt": "用PerfView采集完ETW了，需要做函数级分析定位具体C++函数。本地没有符号缓存",
+      "expected_output": "Skill should detect no local symbol cache, present user with 3 options (provide PDB path / download from Microsoft / skip symbols with module-level only), recommend option C first, and only proceed with network download after explicit user consent.",
+      "files": []
+    },
+    {
+      "id": 10,
+      "name": "symbol-handling-local-cache-exists",
+      "prompt": "用PerfView分析完模块级内存了，需要钻取到函数级。本地C:\\Symbols已经有符号缓存",
+      "expected_output": "Skill should detect existing C:\\Symbols cache, use _NT_SYMBOL_PATH=C:\\Symbols for local-only resolution, run xperf -a virtualalloc -frames soc with -symbols flag (for frames only, not images), and produce function-level analysis without any network access.",
+      "files": []
+    },
+    {
+      "id": 11,
+      "name": "memory-growth-diagnosis",
+      "prompt": "我的应用内存一直在涨，帮我定位内存增长的原因。进程名是MyApp.exe",
+      "expected_output": "Skill should trigger on '定位内存增长', find MyApp.exe process, recommend multi-phase unmanaged memory analysis to compare baseline vs loaded state, collect VirtAlloc events, and identify which modules/functions grow between phases.",
+      "files": []
+    },
+    {
+      "id": 12,
+      "name": "should-not-trigger-generic-memory",
+      "prompt": "My computer is running out of memory, what should I do?",
+      "expected_output": "Skill should NOT trigger. This is a general system memory question, not PerfView-specific profiling of a specific process.",
+      "files": []
+    },
+    {
+      "id": 13,
+      "name": "etw-trace-collection",
+      "prompt": "采集ETW trace分析VisionMaster的非托管内存",
+      "expected_output": "Skill should trigger on '采集ETW trace' + '非托管内存', detect PerfView/xperf, find VisionMaster process, confirm unmanaged memory collection parameters (CircularMB=10000, Duration=30s), and execute perfview_unmanaged.ps1.",
+      "files": []
+    },
+    {
+      "id": 14,
+      "name": "dotnet-managed-out-of-scope",
+      "prompt": "用PerfView分析内存占用，既要看C++非托管分配也要看.NET托管分配",
+      "expected_output": "Skill should trigger, explain that it focuses on unmanaged (C++) memory analysis via VirtAlloc events. Clarify that: (1) .NET managed heap analysis is NOT available via CLI (PerfView GCStats blocks without GUI), (2) .NET Alloc events are not collected because they are irrelevant to VirtAlloc analysis, (3) GC event extraction scripts in scripts/ directory are available for manual use as reference, and (4) suggest user open PerfView GUI if they specifically need GCStats.",
+      "files": []
+    },
+    {
+      "id": 15,
+      "name": "xperf-missing-but-perfview-present",
+      "prompt": "我装了PerfView但没装Windows ADK，能分析非托管内存吗？",
+      "expected_output": "Skill should trigger, detect PerfView (found) and xperf (missing), explain that xperf is needed for the core analysis workflow (virtualalloc -images/-frames/-stacks), guide user to install Windows Performance Toolkit from ADK, but confirm that PerfView collection itself is possible.",
+      "files": []
+    }
+  ]
+}

@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>单点抓取标定流程</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #fff; margin: 24px; }
+  h2 { color: #3A2B7C; margin: 0 0 16px 4px; font-weight: 600; }
+  .flow { position: relative; width: 520px; height: 580px; }
+  .node {
+    position: absolute; width: 140px; height: 28px; line-height: 28px;
+    background: #ECE9F7; border: 1.5px solid #6E5BC7; color: #3A2B7C;
+    border-radius: 8px; text-align: center; font-size: 14px; box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .node.large { width: 200px; }
+  .node.end { background: #4A3FB5; color: #fff; border-color: #4A3FB5; font-weight: 600; }
+  svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<h2>单点抓取标定流程</h2>
+<div class="flow">
+  <svg width="520" height="580">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/>
+      </marker>
+    </defs>
+    <!-- LEFT main column x_center=120 -->
+    <line x1="120" y1="58"  x2="120" y2="98"  stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="120" y1="128" x2="120" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="120" y1="198" x2="120" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="120" y1="268" x2="120" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="120" y1="338" x2="120" y2="378" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="120" y1="408" x2="120" y2="448" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- 位置修正 -> 角度确定 (分支到右侧) -->
+    <polyline points="120,198 120,220 280,220 280,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+    <!-- 角度确定 -> 平移旋转标定 (合并回主流程) -->
+    <polyline points="280,268 280,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/>
+
+    <!-- RIGHT col x_center=360 -->
+    <line x1="360" y1="58"  x2="360" y2="98"  stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- 15 -> 20 (long down, then left into 20) -->
+    <polyline points="360,128 360,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+  </svg>
+  
+  <!-- Left column -->
+  <div class="node" style="left:50px;top:30px;">图像源</div>
+  <div class="node" style="left:50px;top:100px;">轮廓匹配(粗定位)</div>
+  <div class="node" style="left:50px;top:170px;">位置修正</div>
+  <div class="node" style="left:50px;top:240px;">圆查找(精定位)</div>
+  <!-- 新增角度确定节点 - 在精定位右侧 -->
+  <div class="node" style="left:210px;top:240px;">直线查找(角度查找)</div>
+  <div class="node" style="left:50px;top:310px;">平移旋转标定</div>
+  <div class="node" style="left:50px;top:380px;">格式化</div>
+  <div class="node end" style="left:50px;top:450px;">发送数据</div>
+  
+  <!-- Right column -->
+  <div class="node" style="left:290px;top:30px;">接收数据</div>
+  <div class="node" style="left:290px;top:100px;">协议解析</div>
+  
+
+</div>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>{{TITLE}} — 定位方案</title>
+<style>
+*{box-sizing:border-box}body{font-family:-apple-system,'Microsoft YaHei',sans-serif;max-width:960px;margin:0 auto;padding:20px;background:#f5f7fa;color:#333;line-height:1.6}.header{background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;padding:22px 28px;border-radius:12px;margin-bottom:20px}.header h1{margin:0 0 4px;font-size:20px}.header .sub{font-size:13px;opacity:.8}.card{background:#fff;border-radius:10px;padding:20px 24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}.card h2{margin:0 0 14px;font-size:16px;color:#1a73e8;padding-bottom:8px;border-bottom:2px solid #e8f0fe}.card h3{font-size:14px;color:#555;margin:14px 0 8px}.phase{border-left:4px solid;padding:12px 16px;margin-bottom:10px;border-radius:0 6px 6px 0}.pc{border-color:#1a73e8;background:#f0f4ff}.pt{border-color:#0f9d58;background:#f0faf3}.pp{border-color:#f57c00;background:#fff8f0}.ph{font-weight:700;font-size:14px;margin-bottom:8px}.pc .ph{color:#1a73e8}.pt .ph{color:#0f9d58}.pp .ph{color:#f57c00}.flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:8px 0}.fb{padding:7px 11px;border-radius:6px;font-size:12px;text-align:center;min-width:68px;line-height:1.4;border:1.5px solid}.fb-b{background:#e8f0fe;border-color:#4285f4;color:#1a73e8}.fb-g{background:#e6f4ea;border-color:#34a853;color:#188038}.fb-o{background:#fef3e2;border-color:#fbbc04;color:#e37400}.fb-r{background:#fce8e6;border-color:#ea4335;color:#c5221f}.fa{color:#aaa;font-size:16px}.steps{list-style:none;padding:0;margin:0}.steps li{display:flex;gap:10px;margin-bottom:7px;font-size:13px;align-items:flex-start}.sn{background:#1a73e8;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}.sn-g{background:#0f9d58}.sn-o{background:#f57c00}.cl{list-style:none;padding:0;margin:0}.cl li{padding:7px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;font-size:13px}.cl li::before{content:'☐';color:#1a73e8;font-size:14px;flex-shrink:0}.warn{background:#fef3e2;border-left:3px solid #f57c00;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}.tip{background:#e6f4ea;border-left:3px solid #0f9d58;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}th{background:#f1f3f4;padding:9px;text-align:left;font-weight:600}td{padding:9px;border-bottom:1px solid #e8eaed;vertical-align:top}tr:last-child td{border-bottom:none}.rl{list-style:none;padding:0;margin:0}.rl li{padding:4px 0;font-size:13px;color:#1a73e8}.rl li::before{content:'📄 '}
+</style>
+</head>
+<body>
+
+{{META_COMMENT}}
+
+<div class="header">
+  <h1>🎯 {{TITLE}}</h1>
+  <div class="sub">生成时间：{{DATETIME}} &nbsp;·&nbsp; 方案设计 &nbsp;·&nbsp; 定位引导</div>
+</div>
+
+<div class="card">
+  <h2>📋 场景分析</h2>
+  <p>{{SCENE_DESC}}</p>
+  <table>
+    <tr><th>关键参数</th><th>确认值</th></tr>
+    {{PARAMS_TABLE}}
+  </table>
+</div>
+
+<div class="card">
+  <h2>🗺️ 定位方案思路</h2>
+  <div class="flow">
+    {{FLOW_NODES}}
+  </div>
+  {{FLOW_TIP}}
+</div>
+
+<div class="card">
+  <h2>🔧 VM视觉流程图</h2>
+  {{VM_FLOW}}
+</div>
+
+<div class="card">
+  <h2>⚙️ 操作要点</h2>
+  {{OPS_CONTENT}}
+</div>
+
+<div class="card">
+  <h2>⚠️ 注意事项</h2>
+  {{WARNINGS}}
+</div>
+
+<div class="card">
+  <h2>📚 参考文档</h2>
+  <ul class="rl">
+    {{REF_DOCS}}
+  </ul>
+</div>
+
+</body>
+</html>

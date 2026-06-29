@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>单点抓取生产流程</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #fff; margin: 24px; }
+  h2 { color: #3A2B7C; margin: 0 0 16px 4px; font-weight: 600; }
+  .flow { position: relative; width: 520px; height: 540px; }
+  .node {
+    position: absolute; width: 140px; height: 28px; line-height: 28px;
+    background: #ECE9F7; border: 1.5px solid #6E5BC7; color: #3A2B7C;
+    border-radius: 8px; text-align: center; font-size: 14px; box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .node.large { width: 200px; } /* 为精定位节点增加宽度 */
+  .node.end { background: #4A3FB5; color: #fff; border-color: #4A3FB5; font-weight: 600; }
+  svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<h2>单点抓取生产流程</h2>
+<div class="flow">
+  <svg width="520" height="540">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/>
+      </marker>
+    </defs>
+    <!-- 24 -> 25 -> 26 -->
+    <line x1="170" y1="58"  x2="170" y2="98"  stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="170" y1="128" x2="170" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- 26 -> 27 -->
+    <line x1="170" y1="198" x2="170" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- 26 -> 53 (branch right) -->
+    <polyline points="170,198 170,220 350,220 350,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+    <!-- 27 -> 28 -->
+    <line x1="170" y1="268" x2="170" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- 53 -> 28 (merge) -->
+    <polyline points="350,268 350,290 170,290 170,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/>
+    <!-- 28 -> 51 -> 52 -->
+    <line x1="170" y1="338" x2="170" y2="378" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="170" y1="408" x2="170" y2="448" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+  </svg>
+  <div class="node" style="left:100px;top:30px;">图像源</div>
+  <div class="node" style="left:100px;top:100px;">轮廓匹配(粗定位)</div>
+  <div class="node" style="left:100px;top:170px;">位置修正</div>
+  <div class="node" style="left:100px;top:240px;">圆查找(精定位)</div>
+  <div class="node" style="left:280px;top:240px;">直线查找(角度查找)</div>
+  <div class="node" style="left:100px;top:310px;">单点抓取</div>
+  <div class="node" style="left:100px;top:380px;">格式化</div>
+  <div class="node end" style="left:100px;top:450px;">发送数据</div>
+</div>
+</body>
+</html>

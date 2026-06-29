@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>{{TITLE}} — VM视觉诊断</title>
+<style>
+*{box-sizing:border-box}body{font-family:-apple-system,'Microsoft YaHei',sans-serif;max-width:960px;margin:0 auto;padding:20px;background:#f5f7fa;color:#333;line-height:1.6}.header{background:linear-gradient(135deg,#c62828,#b71c1c);color:#fff;padding:22px 28px;border-radius:12px;margin-bottom:20px}.header h1{margin:0 0 4px;font-size:20px}.header .sub{font-size:13px;opacity:.8}.card{background:#fff;border-radius:10px;padding:20px 24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}.card h2{margin:0 0 14px;font-size:16px;color:#c62828;padding-bottom:8px;border-bottom:2px solid #fce8e6}.card h3{font-size:14px;color:#555;margin:14px 0 8px}.phase{border-left:4px solid;padding:12px 16px;margin-bottom:10px;border-radius:0 6px 6px 0}.pc{border-color:#1a73e8;background:#f0f4ff}.pt{border-color:#0f9d58;background:#f0faf3}.pp{border-color:#f57c00;background:#fff8f0}.ph{font-weight:700;font-size:14px;margin-bottom:8px}.pc .ph{color:#1a73e8}.pt .ph{color:#0f9d58}.pp .ph{color:#f57c00}.flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:8px 0}.fb{padding:7px 11px;border-radius:6px;font-size:12px;text-align:center;min-width:68px;line-height:1.4;border:1.5px solid}.fb-b{background:#e8f0fe;border-color:#4285f4;color:#1a73e8}.fb-g{background:#e6f4ea;border-color:#34a853;color:#188038}.fb-o{background:#fef3e2;border-color:#fbbc04;color:#e37400}.fb-r{background:#fce8e6;border-color:#ea4335;color:#c5221f}.fa{color:#aaa;font-size:16px}.steps{list-style:none;padding:0;margin:0}.steps li{display:flex;gap:10px;margin-bottom:7px;font-size:13px;align-items:flex-start}.sn{background:#c62828;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}.sn-g{background:#0f9d58}.sn-o{background:#f57c00}.cl{list-style:none;padding:0;margin:0}.cl li{padding:7px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;font-size:13px}.cl li::before{content:'☐';color:#c62828;font-size:14px;flex-shrink:0}.warn{background:#fef3e2;border-left:3px solid #f57c00;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}.tip{background:#e6f4ea;border-left:3px solid #0f9d58;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}th{background:#f1f3f4;padding:9px;text-align:left;font-weight:600}td{padding:9px;border-bottom:1px solid #e8eaed;vertical-align:top}tr:last-child td{border-bottom:none}.rl{list-style:none;padding:0;margin:0}.rl li{padding:4px 0;font-size:13px;color:#c62828}.rl li::before{content:'📄 '}.pass{color:#0f9d58;font-weight:700}.fail{color:#c62828;font-weight:700}
+</style>
+</head>
+<body>
+
+{{META_COMMENT}}
+
+<div class="header">
+  <h1>{{TITLE}}</h1>
+  <div class="sub">生成时间：{{DATETIME}} &nbsp;·&nbsp; 问题诊断 &nbsp;·&nbsp; VisionMaster</div>
+</div>
+
+<div class="card">
+  <h2>问题诊断摘要</h2>
+  <p><strong>{{DIAG_CONCLUSION}}</strong></p>
+  <p>{{DIAG_DESC}}</p>
+  <table>
+    <tr><th>诊断项</th><th>内容</th></tr>
+    <tr><td>问题现象</td><td>{{SYM_PHENOMENON}}</td></tr>
+    <tr><td>误差数据</td><td>{{SYM_ERRORDATA}}</td></tr>
+    <tr><td>系统配置</td><td>{{SYM_CONFIG}}</td></tr>
+    <tr><td>初步原因</td><td>{{SYM_CAUSE}}</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>排查路径</h2>
+  <div class="flow">
+    <span class="fb fb-b">机构及成像</span>
+    <span class="fa">→</span>
+    <span class="fb fb-b">标定过程</span>
+    <span class="fa">→</span>
+    <span class="fb fb-o">示教过程</span>
+    <span class="fa">→</span>
+    <span class="fb fb-o">生产过程</span>
+  </div>
+  {{CHECK_TIP}}
+</div>
+
+{{CALIB_REPORT}}
+
+<div class="card">
+  <h2>排查操作清单</h2>
+
+  <div class="phase pt">
+    <div class="ph">立即检查（5分钟）</div>
+    <ul class="cl">
+      {{CHECK_NOW}}
+    </ul>
+  </div>
+
+  <div class="phase pc">
+    <div class="ph">短期排查（当天）</div>
+    <ul class="cl">
+      {{CHECK_SHORT}}
+    </ul>
+  </div>
+
+  <div class="phase pp">
+    <div class="ph">深度排查（需规划）</div>
+    <ul class="cl">
+      {{CHECK_DEEP}}
+    </ul>
+  </div>
+</div>
+
+<div class="card">
+  <h2>解决方案</h2>
+  <ul class="steps">
+    {{SOLUTION_STEPS}}
+  </ul>
+  {{VERIFY_TIP}}
+</div>
+
+<div class="card">
+  <h2>参考文档</h2>
+  <ul class="rl">
+    {{REF_DOCS}}
+  </ul>
+</div>
+
+</body>
+</html>

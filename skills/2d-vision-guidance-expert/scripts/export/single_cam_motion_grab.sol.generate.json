@@ -1,0 +1,11 @@
+﻿{
+  "flowsParsed": 2,
+  "nodesParsed": 18,
+  "edgesParsed": 18,
+  "modulesAdded": 18,
+  "connectionsAdded": 18,
+  "baseSolutionUsed": "C:\\Users\\liumin42\\.claude\\skills\\vm-sol-format\\templates\\Template_moduel.sol",
+  "flowMapping": ["标定流程 → 标定流程 (mid=10000)", "生产流程 → 生产流程 (mid=10001)"],
+  "errors": [],
+  "warnings": ["[procs] setDisplayName[Procedure]: 10000 \"流程1\" → \"标定流程\"", "[procs] addProcedure: 新建流程 Index=10001 DisplayName=\"生产流程\"", "[modules] setConnection: 50.follow ← 52", "[modules] setConnection: 52.follow ← 54", "[modules] setConnection: 54.follow ← 55", "[modules] setConnection: 55.follow ← 57", "[modules] setConnection: 57.follow ← 58", "[modules] setConnection: 58.follow ← 59", "[modules] setConnection: 51.follow ← 53", "[modules] setConnection: 54.follow ← 56", "[modules] setConnection: 56.follow ← 57", "[modules] setConnection: 53.follow ← 57", "[modules] setConnection: 60.follow ← 61", "[modules] setConnection: 61.follow ← 62", "[modules] setConnection: 62.follow ← 63", "[modules] setConnection: 63.follow ← 65", "[modules] setConnection: 65.follow ← 66", "[modules] setConnection: 66.follow ← 67", "[modules] setConnection: 62.follow ← 64", "[modules] setConnection: 64.follow ← 65"]
+}

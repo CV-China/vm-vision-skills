@@ -1,0 +1,83 @@
+# 单图像输出 / 多图像输出
+
+## 单图像输出（标准）
+
+XML（`<模块名>.xml` Output Category）：
+
+```xml
+<Combination Name="OutputImage" Style="IMAGE" AccessMode="RW">
+    <Filters>
+        <Filter Name="OutImage"            ValueType="image" IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="OutImageWidth"       ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="OutImageHeight"      ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="OutImagePixelFormat" ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+    </Filters>
+</Combination>
+```
+
+`Display.xml`：
+```xml
+<Object Name="OutputImage" Type="image" Mapping="OutImage,OutImageWidth,OutImageHeight,OutImagePixelFormat" />
+```
+
+C++（Process 内）：
+```cpp
+if (MVD_PIXEL_MONO_08 == modu_input->pImageInObj->GetPixelFormat()) {
+    VmModule_OutputImageByName_8u_C1R(hOutput, 1,
+        "OutImage", "OutImageWidth", "OutImageHeight", "OutImagePixelFormat",
+        &pImage, 0, pSharedName);
+} else if (MVD_PIXEL_RGB_RGB24_C3 == modu_input->pImageInObj->GetPixelFormat()) {
+    VmModule_OutputImageByName_8u_C3R(hOutput, 1,
+        "OutImage", "OutImageWidth", "OutImageHeight", "OutImagePixelFormat",
+        &pImage, 0, pSharedName);
+}
+```
+
+## 多图像输出
+
+XML 复制多个 OutputImage Combination：
+
+```xml
+<Combination Name="OutputImage1" Style="IMAGE" AccessMode="RW">
+    <Filters>
+        <Filter Name="OutImage1"            ValueType="image" IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="OutImage1Width"       ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="OutImage1Height"      ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="OutImage1PixelFormat" ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+    </Filters>
+</Combination>
+<Combination Name="OutputImage2" Style="IMAGE" AccessMode="RW">
+    <!-- 同上，名字替换为 OutImage2 -->
+</Combination>
+```
+
+`Display.xml` 多个 Object：
+```xml
+<Object Name="OutputImage1" Type="image" Mapping="OutImage1,OutImage1Width,OutImage1Height,OutImage1PixelFormat" />
+<Object Name="OutputImage2" Type="image" Mapping="OutImage2,OutImage2Width,OutImage2Height,OutImage2PixelFormat" />
+```
+
+C++（Process 内每张独立共享内存）：
+```cpp
+// 第一张
+HKA_IMAGE pImage1;
+pImage1.height = h1; pImage1.width = w1; pImage1.format = HKA_IMG_MONO_08;
+char* pSharedName1 = NULL;
+AllocateSharedMemory(m_nModuleId, w1*h1, (char**)(&pImage1.data), &pSharedName1);
+// ... 填充 pImage1.data[0] ...
+VmModule_OutputImageByName_8u_C1R(hOutput, 1,
+    "OutImage1", "OutImage1Width", "OutImage1Height", "OutImage1PixelFormat",
+    &pImage1, 0, pSharedName1);
+
+// 第二张
+HKA_IMAGE pImage2;
+pImage2.height = h2; pImage2.width = w2; pImage2.format = HKA_IMG_MONO_08;
+char* pSharedName2 = NULL;
+AllocateSharedMemory(m_nModuleId, w2*h2, (char**)(&pImage2.data), &pSharedName2);
+// ... 填充 ...
+VmModule_OutputImageByName_8u_C1R(hOutput, 1,
+    "OutImage2", "OutImage2Width", "OutImage2Height", "OutImage2PixelFormat",
+    &pImage2, 0, pSharedName2);
+```
+
+**每张图像必须有独立的 `pSharedName`**，不能复用。

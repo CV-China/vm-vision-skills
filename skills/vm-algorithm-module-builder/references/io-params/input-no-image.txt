@@ -1,0 +1,96 @@
+# 无图像输入（Process 2 参数重载）
+
+详见 [../process-overload.md](../process-overload.md) §规则 2。
+
+## `<模块名>.xml` Input Category
+
+删除 InputImage / InputROI / Position Correction Info 三个 Combination。
+保留并按需添加非图像 Input Filter（int/float/string/point 等）。
+
+```xml
+<Category Name="Input">
+    <Filter Name="InputStringParam" ValueType="string" IsForce="false" isShow="true" AccessMode="RO"/>
+    <Filter Name="InputIntParam"    ValueType="int"    IsForce="false" isShow="true" AccessMode="RO"/>
+</Category>
+```
+
+## `<模块名>AlgorithmTab.xml`
+
+`Tab_Basic Params` 删除 `ImageSourceGroup` 与 `<Category Name="Tab_ROI Area">`,保留 `<Tab Name="Tab_Basic Params"><Categorys/></Tab>` 空壳。
+`Tab_Run Params` 和 `ResultShow` 照常保留。
+
+## `<模块名>Display.xml`
+
+删除：
+- `<Object Name="InputImage" Type="image">`
+- `<Object Name="OutputImage" Type="image">`（如无图像输出）
+- `<Object Name="ROI" Type="rect">`
+
+保留 `Data Record` 与 `Result List`（**禁止删除**）。
+
+## AlgorithmModule.h（**两个版本都声明** —— 2 参数版写算法逻辑,3 参数版委托 `return Process(hInput, hOutput);`）
+
+⚠️ **铁律**:3 参数 `Process(hInput, hOutput, modu_input)` 是基类纯虚函数(`=0`),**必须实现**。无图像模块两版都声明:2 参数版写算法逻辑,3 参数版委托调用 2 参数版。详见 `SKILL.md §F` 和 `references/process-overload.md`。
+
+```cpp
+class LINEMODULE_API CAlgorithmModule : public CVmAlgModuleBase, public CModuleSharedMemoryBase
+{
+public:
+    explicit CAlgorithmModule();
+    virtual ~CAlgorithmModule();
+
+    int Init();
+    int Process(IN void* hInput, IN void* hOutput);
+    int Process(IN void* hInput, IN void* hOutput, IN MVDSDK_BASE_MODU_INPUT* modu_input);  // 3 参数纯虚函数(=0),必须实现（委托到 2 参数版）
+    int GetParam(IN const char* szParamName, OUT char* pBuff, IN int nBuffSize, OUT int* pDataLen);
+    int SetParam(IN const char* szParamName, IN const char* pData, IN int nDataLen);
+};
+```
+
+## AlgorithmModule.cpp（**两个版本都实现** —— 2 参数版写算法逻辑,3 参数版委托 `return Process(hInput, hOutput);`）
+
+```cpp
+int CAlgorithmModule::Process(IN void* hInput, IN void* hOutput)
+{
+    int nErrCode = IMVS_EC_OK;
+    int errorStatus = 0;
+    double fStart = MyMilliseconds();
+
+    try
+    {
+        // 读非图像输入(真实签名: VM_M_GetString(hInput, szName, nIndex, pBuff, nBuffLen, &pDataLen, &pCount))
+        char szBuf[1024] = {0};
+        int nDataLen = 0, nCount = 0;
+        nErrCode = VM_M_GetString(hInput, "InputStringParam", 0, szBuf, sizeof(szBuf), &nDataLen, &nCount);
+        // ... 算法处理 ...
+
+        errorStatus = 1;
+        VM_M_SetInt(hOutput, "ModuStatus", 0, errorStatus);
+    }
+    catch (const std::exception& e) {
+        MLOG_ERROR(m_nModuleId, "Process exception: %s", e.what());
+        VM_M_SetInt(hOutput, "ModuStatus", 0, 0);
+        nErrCode = IMVS_EC_PARAM;
+    }
+    catch (...) {
+        MLOG_ERROR(m_nModuleId, "Process unknown exception.");
+        VM_M_SetInt(hOutput, "ModuStatus", 0, 0);
+        nErrCode = IMVS_EC_PARAM;
+    }
+
+    MODULE_RUNTIME_INFO struRunInfo = { 0 };
+    struRunInfo.fAlgorithmTime = MyMilliseconds() - fStart;
+    VM_M_SetModuleRuntimeInfo(m_hModule, &struRunInfo);
+    return nErrCode;
+}
+```
+
+**3 参数版（纯虚函数委托 —— 必须实现，编译必需）**：
+```cpp
+int CAlgorithmModule::Process(IN void* hInput, IN void* hOutput, IN MVDSDK_BASE_MODU_INPUT* modu_input)
+{
+    return Process(hInput, hOutput);  // 委托到 2 参数版（算法逻辑所在）
+}
+```
+
+🚫 **禁止** `AlgCommon_TimeMilliseconds()` —— 模板未定义,会编译失败,唯一可用计时函数是 `MyMilliseconds()`(模板 AlgorithmModule.h 中定义)。

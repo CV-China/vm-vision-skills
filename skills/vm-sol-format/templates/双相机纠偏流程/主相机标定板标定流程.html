@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>主相机标定板标定流程</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #fff; margin: 24px; }
+  h2 { color: #3A2B7C; margin: 0 0 16px 4px; font-weight: 600; }
+  .flow { position: relative; width: 400px; height: 340px; }
+  .node {
+    position: absolute; width: 140px; height: 28px; line-height: 28px;
+    background: #ECE9F7; border: 1.5px solid #6E5BC7; color: #3A2B7C;
+    border-radius: 8px; text-align: center; font-size: 14px; box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .node.end { background: #4A3FB5; color: #fff; border-color: #4A3FB5; font-weight: 600; }
+  svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<h2>主相机标定板标定流程</h2>
+<div class="flow">
+  <svg width="400" height="340">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/>
+      </marker>
+    </defs>
+    <line x1="200" y1="58" x2="200" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="200" y1="128" x2="200" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="200" y1="198" x2="200" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+  </svg>
+  <div class="node" style="left:130px;top:30px;">图像源</div>
+  <div class="node" style="left:130px;top:100px;">标定板标定</div>
+  <div class="node" style="left:130px;top:170px;">格式化</div>
+  <div class="node end" style="left:130px;top:240px;">发送数据</div>
+</div>
+</body>
+</html>

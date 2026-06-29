@@ -1,0 +1,299 @@
+# 运行参数（Integer / Float / Boolean / String / Enumeration / OpenFile / IntegerBettween / FloatBettween）
+
+详见 [../param-type-mapping.md](../param-type-mapping.md) §4–§5 与 [../xml-schemas/algorithm-tab.xml.md](../xml-schemas/algorithm-tab.xml.md) 的完整说明。本文件汇总常用控件的 XML 片段。
+
+## ⚠️ 通用铁律
+
+1. **只生成用户在步骤 4 列出的参数**,不要自作主张加 `enableThreshold` / `PyramidModeEnable` 等使能开关
+2. **所有控件必须含完整子节点**：`<Description>` + `<DisplayName>` + `<AccessMode>` + `<CurValue>` + `<DefaultValue>`（数值类追加 `<MinValue>` + `<MaxValue>` + `<IncValue>`）
+3. **中文名/描述用户未提供 → 默认 = 英文名**（Name 属性值）,不要省略整个 `<DisplayName>` / `<Description>` 节点
+4. **禁用旧拼写**：`<Bool>` / `<Range_Int>` / `<Range_Float>` / `<IntegerBetween>` / `<FloatBetween>`（单 t） —— VM 内部就是 `<Boolean>` / `<IntegerBettween>` / `<FloatBettween>`（双 t）
+
+## AlgorithmTab.xml 中（控件定义）
+
+### Integer
+
+用户回复"英文名 thresholdValue,中文名 阈值,描述 阈值(一般范围是0~255),默认 128,范围 0~255,步长 1"：
+
+```xml
+<Integer Name="thresholdValue" NameSpace="Standard">
+    <Description>阈值(一般范围是0~255)</Description>
+    <DisplayName>阈值</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <MinValue>0</MinValue>
+    <MaxValue>255</MaxValue>
+    <CurValue>128</CurValue>
+    <DefaultValue>128</DefaultValue>
+    <IncValue>1</IncValue>
+</Integer>
+```
+
+### Float
+
+```xml
+<Float Name="ratioValue" NameSpace="Standard">
+    <Description>比率</Description>
+    <DisplayName>比率</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <MinValue>0.0</MinValue>
+    <MaxValue>1.0</MaxValue>
+    <CurValue>0.5</CurValue>
+    <DefaultValue>0.5</DefaultValue>
+    <IncValue>0.01</IncValue>
+    <DecimalDigits>2</DecimalDigits>
+</Float>
+```
+
+### Boolean（**不是 `<Bool>`**；仅当用户主动要求使能开关时生成）
+
+```xml
+<Boolean Name="PyramidModeEnable" NameSpace="Standard">
+    <Description>手动尺度使能</Description>
+    <DisplayName>手动尺度使能</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <CurValue>False</CurValue>
+    <DefaultValue>False</DefaultValue>
+</Boolean>
+```
+
+CurValue/DefaultValue 写 `True`/`False`（首字母大写,与 cpp 端 `strcmp("True", pData)` 对齐）。
+
+### String
+
+```xml
+<String Name="modelName" NameSpace="Standard">
+    <Description>模型名称</Description>
+    <DisplayName>模型名称</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <CurValue></CurValue>
+    <DefaultValue></DefaultValue>
+</String>
+```
+
+### Enumeration
+
+```xml
+<Enumeration Name="thresholdType" NameSpace="Standard">
+    <Description>阈值化类型</Description>
+    <DisplayName>阈值化类型</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <CurValue>1</CurValue>
+    <DefaultValue>1</DefaultValue>
+    <EnumEntrys>
+        <EnumEntry>
+            <Description>BINARY</Description>
+            <DisplayName>BINARY</DisplayName>
+            <Value>1</Value>
+        </EnumEntry>
+        <EnumEntry>
+            <Description>BINARY_INV</Description>
+            <DisplayName>BINARY_INV</DisplayName>
+            <Value>2</Value>
+        </EnumEntry>
+        <EnumEntry>
+            <Description>OTSU</Description>
+            <DisplayName>OTSU</DisplayName>
+            <Value>3</Value>
+        </EnumEntry>
+    </EnumEntrys>
+</Enumeration>
+```
+
+### OpenFile
+
+```xml
+<OpenFile Name="modelPath" NameSpace="Standard">
+    <Description>模型路径</Description>
+    <DisplayName>模型路径</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <CurValue></CurValue>
+    <DefaultValue></DefaultValue>
+    <Filter>Model files (*.dat)|*.dat|All files (*.*)|*.*</Filter>
+</OpenFile>
+```
+
+### OpenFolderDialogEx（选择/打开文件夹 或 导出至文件夹,同一标签,语义由 Name/Description 区分）
+
+打开/加载文件夹示例：
+
+```xml
+<OpenFolderDialogEx Name="LoadModelPath">
+    <Description>加载模型</Description>
+    <DisplayName>加载模型</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <MaxFileDirLength>200</MaxFileDirLength>
+    <CustomVisible>True</CustomVisible>
+</OpenFolderDialogEx>
+```
+
+导出至文件夹示例：
+
+```xml
+<OpenFolderDialogEx Name="SaveModelPath">
+    <Description>导出模型</Description>
+    <DisplayName>导出模型</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <MaxFileDirLength>200</MaxFileDirLength>
+    <CustomVisible>True</CustomVisible>
+</OpenFolderDialogEx>
+```
+
+⚠️ 此控件**无** `<CurValue>` / `<DefaultValue>` / `<MinValue>` / `<MaxValue>` —— 仅含 Description/DisplayName/AccessMode/MaxFileDirLength/CustomVisible 五个子节点。
+
+### OpenFileForCNNDialog（加载/打开深度学习模型）
+
+```xml
+<OpenFileForCNNDialog Name="LoadModelPath">
+    <Description>Model File Path</Description>
+    <DisplayName>Model File Path</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <CurValue>cmd</CurValue>
+    <DefaultValue>cmd</DefaultValue>
+    <FileOption>
+        <IsMultiselect>true</IsMultiselect>
+        <FilterName>模型文件|*.bin</FilterName>
+    </FileOption>
+</OpenFileForCNNDialog>
+```
+
+### OpenFileForCalibDialog（加载/打开标定文件）
+
+```xml
+<OpenFileForCalibDialog Name="FilePath">
+    <Description>Load Calib File Path</Description>
+    <DisplayName>Load Calibration File</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <CurValue></CurValue>
+    <DefaultValue></DefaultValue>
+    <FileOption>
+        <IsMultiselect>false</IsMultiselect>
+        <FilterName>.iwcal;.txt;.xml|*.iwcal;*.txt;*.xml</FilterName>
+    </FileOption>
+</OpenFileForCalibDialog>
+```
+
+### SaveFileDialog（保存文件,如标定文件/配置文件）
+
+```xml
+<SaveFileDialog Name="SaveCalibPath">
+    <Description>Create Calibration File Path</Description>
+    <DisplayName>Create Calibration File</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <CustomVisible>False</CustomVisible>
+    <CurValue>cmd</CurValue>
+    <DefaultValue>cmd</DefaultValue>
+    <SaveType>CalibPath</SaveType>
+    <FileOption>
+        <IsMultiselect>false</IsMultiselect>
+        <FilterName>.txt|*.txt</FilterName>
+    </FileOption>
+</SaveFileDialog>
+```
+
+⚠️ **FileOption/FilterName 规则**：
+- `<FilterName>显示名|*.扩展名</FilterName>` 控制对话框文件类型过滤
+- 多扩展用 `;` 分隔：`<FilterName>.iwcal;.txt;.xml|*.iwcal;*.txt;*.xml</FilterName>`
+- `<IsMultiselect>true/false</IsMultiselect>` 控制是否允许多选
+
+⚠️ **Description / DisplayName 规则**（与 Integer/Float 一致）：
+- 用户未提供中文名 / 描述 → 默认 = 英文名（Name 属性值）
+- 用户提供 → 按用户给定填入
+
+### IntegerBettween（双 t,VM 内部拼写）
+
+```xml
+<IntegerBettween Name="GrayRange" NameSpace="Standard">
+    <Description>灰度范围</Description>
+    <DisplayName>灰度范围</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <DefaultValue>0</DefaultValue>
+    <MinValue>0</MinValue>
+    <MaxValue>255</MaxValue>
+    <IncValue>1</IncValue>
+    <CustomVisible>False</CustomVisible>
+    <Integers>
+        <Integer Name="MinGray">
+            <Description>Min Gray</Description>
+            <DisplayName>Min Gray</DisplayName>
+            <AccessMode>RW</AccessMode>
+            <CurValue>50</CurValue>
+            <DefaultValue>50</DefaultValue>
+            <MinValue>0</MinValue>
+            <MaxValue>255</MaxValue>
+            <IncValue>1</IncValue>
+        </Integer>
+        <Integer Name="MaxGray">
+            <Description>Max Gray</Description>
+            <DisplayName>Max Gray</DisplayName>
+            <AccessMode>RW</AccessMode>
+            <CurValue>200</CurValue>
+            <DefaultValue>200</DefaultValue>
+            <MinValue>0</MinValue>
+            <MaxValue>255</MaxValue>
+            <IncValue>1</IncValue>
+        </Integer>
+    </Integers>
+</IntegerBettween>
+```
+
+### FloatBettween（双 t）
+
+```xml
+<FloatBettween Name="RangCircularity">
+    <Description>This Value is the range of Blob Roundness</Description>
+    <DisplayName>Circularity Range</DisplayName>
+    <AccessMode>RW</AccessMode>
+    <AlgorithmIndex>0x0001</AlgorithmIndex>
+    <DefaultValue>1</DefaultValue>
+    <MinValue>0</MinValue>
+    <MaxValue>1</MaxValue>
+    <IncValue>0.01</IncValue>
+    <CustomVisible>False</CustomVisible>
+    <Floats>
+        <Float Name="MinCircularity">
+            <Description>Min Circularity</Description>
+            <DisplayName>Min Circularity</DisplayName>
+            <AccessMode>RW</AccessMode>
+            <AlgorithmIndex>0x0618</AlgorithmIndex>
+            <CurValue>0.1</CurValue>
+            <DefaultValue>0.1</DefaultValue>
+            <MinValue>0</MinValue>
+            <MaxValue>1</MaxValue>
+            <IncValue>0.01</IncValue>
+        </Float>
+        <Float Name="MaxCircularity">
+            <Description>Max Circularity</Description>
+            <DisplayName>Max Circularity</DisplayName>
+            <AccessMode>RW</AccessMode>
+            <AlgorithmIndex>0x0619</AlgorithmIndex>
+            <CurValue>1</CurValue>
+            <DefaultValue>1</DefaultValue>
+            <MinValue>0</MinValue>
+            <MaxValue>1</MaxValue>
+            <IncValue>0.01</IncValue>
+        </Float>
+    </Floats>
+</FloatBettween>
+```
+
+⚠️ IntegerBettween/FloatBettween 父节点**仅** `<DefaultValue>`,**无** `<CurValue>` —— CurValue 在子 `<Integers>`/`<Floats>` 内具体的 Integer/Float 上。
+
+## Algorithm.xml 中（默认值,简化为 ParamItem）
+
+```xml
+<AlgorithmParamList>
+    <ParamItem><Name>thresholdValue</Name><DefaultValue>128</DefaultValue></ParamItem>
+    <ParamItem><Name>thresholdType</Name><DefaultValue>1</DefaultValue></ParamItem>
+    <ParamItem><Name>ratioValue</Name><DefaultValue>0.5</DefaultValue></ParamItem>
+    <ParamItem><Name>PyramidModeEnable</Name><DefaultValue>False</DefaultValue></ParamItem>
+    <ParamItem><Name>modelName</Name><DefaultValue></DefaultValue></ParamItem>
+    <ParamItem><Name>modelPath</Name><DefaultValue></DefaultValue></ParamItem>
+    <!-- IntegerBettween/FloatBettween 的 Min/Max 子参数分别一条 ParamItem -->
+    <ParamItem><Name>MinGray</Name><DefaultValue>50</DefaultValue></ParamItem>
+    <ParamItem><Name>MaxGray</Name><DefaultValue>200</DefaultValue></ParamItem>
+</AlgorithmParamList>
+```
+
+## C++ 端 GetParam/SetParam 完整模板
+
+见 [../param-type-mapping.md](../param-type-mapping.md) §5。

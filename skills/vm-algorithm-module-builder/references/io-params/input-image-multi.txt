@@ -1,0 +1,35 @@
+# 第二张/多张输入图像
+
+## XML（`<模块名>.xml` 增加额外 Combination）
+
+```xml
+<Combination Name="InputImage2" Style="IMAGE" AccessMode="RW">
+    <Filters>
+        <Filter Name="InImage2"            ValueType="image" IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="InImage2Width"       ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="InImage2Height"      ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="InImage2PixelFormat" ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+    </Filters>
+</Combination>
+```
+
+## C++（Process 内）
+
+```cpp
+// 主图像(用 modu_input->pImageInObj,按 input-image.txt 获取)
+// 第二张图像(按名称从 hInput 拿,使用 VmModule_GetInputImageByName)
+// 真实签名: VmModule_GetInputImageByName(hInput, strImage, strWidth, strHeight, strFormat,
+//                                       HKA_IMAGE*, &imageStatus, strSharedMemName=NULL)
+HKA_IMAGE pImage2;
+int status2 = 0;
+char szShared2[256] = {0};
+int nErr2 = VmModule_GetInputImageByName(hInput,
+                                         "InImage2", "InImage2Width",
+                                         "InImage2Height", "InImage2PixelFormat",
+                                         &pImage2, &status2, szShared2);
+if (nErr2 != IMVS_EC_OK) {
+    MLOG_ERROR(m_nModuleId, "Get InImage2 failed: 0x%x", nErr2);
+    return IMVS_EC_PARAM;
+}
+// 注意:浅拷贝。若要修改 pImage2 数据须先深拷贝(AllocateSharedMemory 申请新内存后 memcpy_s)
+```

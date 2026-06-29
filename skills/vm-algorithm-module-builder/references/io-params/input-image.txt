@@ -1,0 +1,182 @@
+# 输入图像（标准单张灰度/彩色） — 深/浅拷贝两种方式
+
+⚠️ **强制决策**:Process 内访问 `modu_input->pImageInObj` 前,**必须**先判断算法是否修改像素,选定深拷贝或浅拷贝。详见 [../../SKILL.md §G](../../SKILL.md)。
+
+## XML（`<模块名>.xml` Input Category 中）
+
+```xml
+<Combination Name="InputImage" Style="IMAGE" AccessMode="RW">
+    <Filters>
+        <Filter Name="InImage"            ValueType="image" IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="InImageWidth"       ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="InImageHeight"      ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+        <Filter Name="InImagePixelFormat" ValueType="int"   IsForce="true" isShow="true" AccessMode="RO"/>
+    </Filters>
+</Combination>
+```
+
+## C++ 方式 A:深拷贝（算法会修改图像数据,如二值化/滤波/形态学）
+
+```cpp
+HKA_IMAGE pImage;
+pImage.height = modu_input->pImageInObj->GetHeight();
+pImage.width  = modu_input->pImageInObj->GetWidth();
+int nLen = pImage.height * pImage.width;
+if (MVD_PIXEL_RGB_RGB24_C3 == modu_input->pImageInObj->GetPixelFormat()) {
+    pImage.format = HKA_IMG_RGB_RGB24_C3;
+    nLen = pImage.height * pImage.width * 3;
+} else {
+    pImage.format = HKA_IMG_MONO_08;
+}
+char* pSharedName = NULL;
+int nErrCode = AllocateSharedMemory(m_nModuleId, nLen,
+                                    (char**)(&pImage.data), &pSharedName);
+if (nErrCode != IMVS_EC_OK) {
+    MLOG_ERROR(m_nModuleId, "AllocateSharedMemory failed: 0x%x", nErrCode);
+    return IMVS_EC_RESOURCE_CREATE;
+}
+memcpy_s(pImage.data[0], nLen,
+         modu_input->pImageInObj->GetImageData(0)->pData,
+         modu_input->pImageInObj->GetImageData(0)->nSize);
+
+// 此时 pImage.data[0] 是独立内存,可直接 in-place 修改像素
+// for (int i = 0; i < nLen; ++i) pImage.data[0][i] = ...;
+
+// 输出: bDeepCopy=false (自己已深拷贝,无需 SDK 再复制),传 pSharedName
+VmModule_OutputImageByName_8u_C1R(hOutput, /*status*/1,
+    "OutImage", "OutImageWidth", "OutImageHeight", "OutImagePixelFormat",
+    &pImage, /*bDeepCopy*/ false, pSharedName);
+```
+
+## C++ 方式 B:浅拷贝（算法只读取图像数据,如直线检测/缺陷统计/模板匹配）
+
+```cpp
+// 直接引用平台内存,禁止写入
+const unsigned char* pSrcData = modu_input->pImageInObj->GetImageData(0)->pData;
+int nWidth  = modu_input->pImageInObj->GetWidth();
+int nHeight = modu_input->pImageInObj->GetHeight();
+int nFormat = modu_input->pImageInObj->GetPixelFormat();
+
+// 算法仅读 pSrcData,不写
+// for (int y=0; y<nHeight; ++y) { for (int x=0; x<nWidth; ++x) { read pSrcData[y*nWidth+x] ... } }
+
+// 若需要将"原图"也作为图像输出(用于下游显示):
+//   bDeepCopy=true,让 SDK 复制一份,避免下游与上游共享同一内存
+HKA_IMAGE shallowImg;
+shallowImg.height = nHeight;
+shallowImg.width  = nWidth;
+shallowImg.format = (nFormat == MVD_PIXEL_RGB_RGB24_C3)
+                    ? HKA_IMG_RGB_RGB24_C3 : HKA_IMG_MONO_08;
+shallowImg.data[0] = (HKA_U8*)pSrcData;
+VmModule_OutputImageByName_8u_C1R(hOutput, /*status*/1,
+    "OutImage", "OutImageWidth", "OutImageHeight", "OutImagePixelFormat",
+    &shallowImg, /*bDeepCopy*/ true, /*pSharedMemoryName*/ NULL);
+```
+
+## 决策速查
+
+| 算法行为 | 选 A 深拷贝 | 选 B 浅拷贝 |
+|---|---|---|
+| 二值化 / 阈值 / Otsu | ✅ | ❌(会污染上游) |
+| 高斯/中值/形态学/边缘增强(写入新像素) | ✅ | ❌ |
+| 通道转换/Resize/翻转/旋转(改输出形状) | ✅ | ❌ |
+| 直线/圆/轮廓检测(只读) | 可,但浪费 | ✅ |
+| 缺陷/异物检测(只读) | 可,但浪费 | ✅ |
+| 模板匹配/特征比对(只读) | 可,但浪费 | ✅ |
+| 像素统计/直方图/灰度均值 | 可,但浪费 | ✅ |
+| **无法推断** | ✅(默认) | ❌ |
+
+**不确定就选 A**;或在 plan-before-code 阶段明确询问用户:"该算法是否修改输入图像像素?"
+
+## ROI / 屏蔽区 + 掩膜循环（**仅输入语义，不作 Process 输出**）
+
+### 判定（**先判定再写代码**）
+- 用户描述含 "在 ROI 内 / 支持 ROI / 矩形框内 / 含屏蔽区 / 排除某区域" → **启用 ROI**：按下面 mask 流程写
+- 用户描述**未提**任何 ROI / 区域字样 → **不启用 ROI（默认全图处理）**：**不要**调 `GenerateMaskImage`，**不要**访问 `pImageMaskObj`，循环直接遍历全图
+- 用户描述含糊（如"在图像上做 X"）→ **主动询问用户**是否需要支持 ROI / 屏蔽区（详见 SKILL.md §H）
+
+### 启用 ROI 时的 Process 代码
+
+```cpp
+// 1. 生成掩膜(基类接口,基于位置修正后的 ROI/屏蔽区)
+//    ROI 内 + 屏蔽区外 → 255;其他 → 0
+GenerateMaskImage(modu_input,
+                  modu_input->vtFixRoiShapeObj,
+                  modu_input->vctfixShieldedPolygon);
+unsigned char* pImgDataMask =
+    (unsigned char*)modu_input->pImageMaskObj->GetImageData(0)->pData;
+
+unsigned char* pImgData = (unsigned char*)pImage.data[0];  // 深拷贝后的可写数据
+int rows = pImage.height, cols = pImage.width;
+```
+
+### 变体 1:基础双重循环(可读性最好)
+```cpp
+if (MVD_PIXEL_MONO_08 == modu_input->pImageInObj->GetPixelFormat()) {
+    for (int row = 0; row < rows; row++) {
+        for (int col = 0; col < cols; col++) {
+            int pos = col + row * cols;
+            if (pImgDataMask[pos] == 255) {
+                switch (m_nthresholdType) {
+                case 1: pImgData[pos] = (pImgData[pos] > m_nthresholdValue) ? 255 : 0; break;
+                case 2: pImgData[pos] = (pImgData[pos] > m_nthresholdValue) ? 0 : 255; break;
+                }
+            }
+        }
+    }
+}
+```
+
+### 变体 2:单循环 + 分支外提(循环展开,~1.5x)
+```cpp
+if (MVD_PIXEL_MONO_08 == modu_input->pImageInObj->GetPixelFormat()) {
+    if (1 == m_nthresholdType) {
+        for (size_t i = 0; i < (size_t)rows * cols; i++) {
+            if (pImgDataMask[i] == 255)
+                pImgData[i] = (pImgData[i] > m_nthresholdValue) ? 255 : 0;
+        }
+    } else if (2 == m_nthresholdType) {
+        for (size_t i = 0; i < (size_t)rows * cols; i++) {
+            if (pImgDataMask[i] == 255)
+                pImgData[i] = (pImgData[i] > m_nthresholdValue) ? 0 : 255;
+        }
+    }
+}
+```
+
+### 变体 3:OpenMP 并行(~Nx,N=核心数;须 vcxproj 开启 /openmp)
+```cpp
+if (1 == m_nthresholdType) {
+    #pragma omp parallel for
+    for (int i = 0; i < rows * cols; i++) {
+        if (pImgDataMask[i] == 255)
+            pImgData[i] = (pImgData[i] > m_nthresholdValue) ? 255 : 0;
+    }
+}
+```
+
+### 变体 4:OpenMP + AVX2 SIMD(~8x;须 /openmp + /arch:AVX2)
+完整代码见 examples/ 或参考 SKILL.md §A（性能优化默认不启用）。**未经用户同意不主动启用 AVX2/OpenMP**——增加编译依赖。
+
+### ROI 输出铁律
+- **绝不**在 Process 末尾 `VM_M_SetBytes(hOutput, "OutROI", ...)` / `VmModule_OutputVector_BoxF(hOutput,1,...,"OutROI",...)` 等
+- 模块基类**自动**把当前 ROI 与屏蔽区回显到 VM 显示层,无需手动输出
+- `<模块名>.xml` 也**不要**为 ROI 增加 Input/Output Filter
+
+### 不启用 ROI（默认全图处理）的 Process 代码
+
+```cpp
+// 不调 GenerateMaskImage,不访问 pImageMaskObj
+unsigned char* pImgData = (unsigned char*)pImage.data[0];
+int rows = pImage.height, cols = pImage.width;
+
+if (MVD_PIXEL_MONO_08 == modu_input->pImageInObj->GetPixelFormat()) {
+    for (int i = 0; i < rows * cols; i++) {
+        // 直接处理 pImgData[i],不查 mask
+        switch (m_nthresholdType) {
+        case 1: pImgData[i] = (pImgData[i] > m_nthresholdValue) ? 255 : 0; break;
+        case 2: pImgData[i] = (pImgData[i] > m_nthresholdValue) ? 0 : 255; break;
+        }
+    }
+}
+```

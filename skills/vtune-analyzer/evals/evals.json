@@ -1,0 +1,131 @@
+{
+  "skill_name": "vtune-analyzer",
+  "evals": [
+    {
+      "id": 1,
+      "name": "profile-visionmaster",
+      "prompt": "VisionMaster is running with PID 38812. Can you use VTune to profile its CPU hotspots for 30 seconds?",
+      "expected_output": "Skill should trigger, detect VTune, run elevated collection script, and present top hotspots from mvb_cnn_x64_cpu.dll.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "name": "profile-unknown-process",
+      "prompt": "帮我用VTune分析一下正在运行的notepad.exe的性能",
+      "expected_output": "Skill should trigger, resolve notepad.exe PID, confirm with user, run collection.",
+      "files": []
+    },
+    {
+      "id": 3,
+      "name": "no-vtune-installed",
+      "prompt": "I want to profile my Python script with VTune but I'm not sure if it's installed. Can you help?",
+      "expected_output": "Skill should trigger, run vtune_detect.ps1, find no VTune installation, stop the VTune pipeline, and present two options: (A) install VTune with download URL, (B) use Windows Performance Recorder (wpr/xperf, requires Windows ADK installation) as an ETW-based alternative.",
+      "files": []
+    },
+    {
+      "id": 4,
+      "name": "should-not-trigger-general-perf",
+      "prompt": "My application feels slow, what could be the reason? It's a web app with a database backend.",
+      "expected_output": "Skill should NOT trigger. This is a general performance question, not VTune-specific. The user hasn't mentioned VTune or profiling a specific Windows process.",
+      "files": []
+    },
+    {
+      "id": 5,
+      "name": "launch-mode-fallback",
+      "prompt": "VTune Pin attach keeps failing with 'Failed to write probes' on VisionMaster. Is there another way to profile it?",
+      "expected_output": "Skill should suggest launch-mode profiling using -LaunchMode -TargetExe to start VisionMaster under VTune, avoiding the Pin attach issue.",
+      "files": []
+    },
+    {
+      "id": 6,
+      "name": "generate-md-report",
+      "prompt": "调用分析技能生成的报告自动帮我总结前10最消耗资源的文件",
+      "expected_output": "Skill should parse hotspots.csv, aggregate CPU time by module, rank top 10, save a comprehensive VTune_Analysis_Report.md with collection overview, top functions, top modules, key findings, caveats, and recommendations.",
+      "files": []
+    },
+    {
+      "id": 7,
+      "name": "launch-mode-solution-readiness",
+      "prompt": "使用VTune启动模式分析VisionMaster，我需要加载视觉方案后再采集",
+      "expected_output": "Skill should ask user whether they need to load a solution file, use -KillTarget mode with confirm.txt signal file, and instruct the user to load the solution and start the pipeline immediately after VisionMaster launches. The script internally overrides -Duration to 0 and starts timing only after confirm.txt is created.",
+      "files": []
+    },
+    {
+      "id": 8,
+      "name": "killtarget-mode",
+      "prompt": "Use VTune to profile VisionMaster in launch mode and kill the process when done so Pin detach doesn't corrupt the results",
+      "expected_output": "Skill should use -LaunchMode -KillTarget -TargetExe with vtune_collect.ps1. Script starts background collection, waits for confirm.txt, times the collection window, kills the process, then cancels VTune. Agent should explain the confirm.txt signal mechanism.",
+      "files": []
+    },
+    {
+      "id": 9,
+      "name": "pmu-degradation",
+      "prompt": "Does VTune support memory analysis on my i7-9750H laptop?",
+      "expected_output": "Skill should run vtune_detect.ps1, detect Coffee Lake Refresh CPU, report PMU incompatible, and automatically degrade hotspots-memory to hotspots (CPU only) with a clear explanation. i7-9750H is a Skylake-derivative CPU not supported by VTune 2025+ for hardware PMU.",
+      "files": []
+    },
+    {
+      "id": 10,
+      "name": "amd-cpu-detection",
+      "prompt": "I have a Ryzen 9 7950X. Can I use VTune hardware PMU event sampling?",
+      "expected_output": "Skill should run vtune_detect.ps1, detect AMD CPU, set pmu_compatible=false with reason 'AMD CPUs are not supported for VTune hardware PMU events', downgrade to SW sampling mode, and continue the workflow with software sampling.",
+      "files": []
+    },
+    {
+      "id": 11,
+      "name": "residual-process-cleanup",
+      "prompt": "VisionMaster上次采集后残留了进程，帮我清理并用VTune重新分析",
+      "expected_output": "Skill should check process status (step 1), detect residual VisionMaster + child processes (AwakenGpuTool, vServerApp), confirm with user then Stop-Process -Force all of them, verify cleanup, find exe path, and proceed with launch mode collection.",
+      "files": []
+    },
+    {
+      "id": 12,
+      "name": "custom-duration",
+      "prompt": "用VTune分析notepad.exe的CPU热点，只采集30秒",
+      "expected_output": "Skill should use -Duration 30 with vtune_collect.ps1. The Duration parameter should be validated (non-negative, <= 3600). Collection runs for exactly 30 seconds then generates reports.",
+      "files": []
+    },
+    {
+      "id": 13,
+      "name": "manual-stop-mode",
+      "prompt": "使用VTune分析VisionMaster，采集时长不确定，需要手动停止",
+      "expected_output": "Skill should use -Duration 0 (manual stop mode). VTune runs indefinitely until the user says 'stop', at which point Agent sends 'vtune -command stop'. Agent should explain this mechanism clearly.",
+      "files": []
+    },
+    {
+      "id": 14,
+      "name": "custom-output-dir",
+      "prompt": "VTune分析VisionMaster，结果存到E:\\perf_results",
+      "expected_output": "Skill should use -OutputDir 'E:\\perf_results'. Results go to E:\\perf_results\\, reports to E:\\perf_results_report\\. Agent should confirm the path before starting. Script creates directories via New-Item -Force automatically.",
+      "files": []
+    },
+    {
+      "id": 15,
+      "name": "output-path-safety",
+      "prompt": "VTune VisionMaster -OutputDir C:\\",
+      "expected_output": "Skill or script should REFUSE to operate on root-level directories. vtune_collect.ps1 validates path depth and rejects dangerous paths (C:\\, C:\\Windows, C:\\Program Files, etc.) with a clear error message. Agent should never pass root paths to the script.",
+      "files": []
+    },
+    {
+      "id": 16,
+      "name": "sep-driver-install",
+      "prompt": "VTune SEP驱动没装，帮我安装并分析VisionMaster",
+      "expected_output": "Skill should check SEP driver with 'sc.exe query sepdrv5', detect exit code 1060 (not installed), run amplxe-sepreg.exe -i to install with 30s timeout, verify with sc.exe query after install, then proceed with normal collection workflow.",
+      "files": []
+    },
+    {
+      "id": 17,
+      "name": "net-managed-code-warning",
+      "prompt": "我使用附加模式分析了一个.NET应用的CPU热点，报告中显示'Cannot profile the managed part'。怎么获取C#代码的热点？",
+      "expected_output": "Skill should explain that attach mode cannot profile .NET managed code because Pin injects after CLR initialization. Recommend using LaunchMode instead (Pin injects before CLR init). Also suggest PerfView as complementary tool for .NET managed code profiling. In the report, clearly note this limitation under 'Caveats' section.",
+      "files": []
+    },
+    {
+      "id": 18,
+      "name": "vtune-process-hang-timeout",
+      "prompt": "VTune采集VisionMaster时似乎卡住了，怎么办？",
+      "expected_output": "Skill should explain that vtune_collect.ps1 has built-in timeouts: (1) standard mode waits Duration+120s then kills hung VTune, (2) KillTarget mode has 5min confirm timeout + 60s finalize timeout. Agent should check the script output for timeout messages and suggest retry with adjusted parameters.",
+      "files": []
+    }
+  ]
+}

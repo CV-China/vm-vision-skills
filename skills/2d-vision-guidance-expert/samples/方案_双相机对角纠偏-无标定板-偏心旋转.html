@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>双相机对角纠偏-无标定板-偏心旋转 — 定位方案</title>
+<style>
+*{box-sizing:border-box}body{font-family:-apple-system,'Microsoft YaHei',sans-serif;max-width:960px;margin:0 auto;padding:20px;background:#f5f7fa;color:#333;line-height:1.6}.header{background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;padding:22px 28px;border-radius:12px;margin-bottom:20px}.header h1{margin:0 0 4px;font-size:20px}.header .sub{font-size:13px;opacity:.8}.card{background:#fff;border-radius:10px;padding:20px 24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}.card h2{margin:0 0 14px;font-size:16px;color:#1a73e8;padding-bottom:8px;border-bottom:2px solid #e8f0fe}.card h3{font-size:14px;color:#555;margin:14px 0 8px}.phase{border-left:4px solid;padding:12px 16px;margin-bottom:10px;border-radius:0 6px 6px 0}.pc{border-color:#1a73e8;background:#f0f4ff}.pt{border-color:#0f9d58;background:#f0faf3}.pp{border-color:#f57c00;background:#fff8f0}.ph{font-weight:700;font-size:14px;margin-bottom:8px}.pc .ph{color:#1a73e8}.pt .ph{color:#0f9d58}.pp .ph{color:#f57c00}.flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:8px 0}.fb{padding:7px 11px;border-radius:6px;font-size:12px;text-align:center;min-width:68px;line-height:1.4;border:1.5px solid}.fb-b{background:#e8f0fe;border-color:#4285f4;color:#1a73e8}.fb-g{background:#e6f4ea;border-color:#34a853;color:#188038}.fb-o{background:#fef3e2;border-color:#fbbc04;color:#e37400}.fb-r{background:#fce8e6;border-color:#ea4335;color:#c5221f}.fa{color:#aaa;font-size:16px}.steps{list-style:none;padding:0;margin:0}.steps li{display:flex;gap:10px;margin-bottom:7px;font-size:13px;align-items:flex-start}.sn{background:#1a73e8;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}.sn-g{background:#0f9d58}.sn-o{background:#f57c00}.cl{list-style:none;padding:0;margin:0}.cl li{padding:7px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;font-size:13px}.cl li::before{content:'☐';color:#1a73e8;font-size:14px;flex-shrink:0}.warn{background:#fef3e2;border-left:3px solid #f57c00;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}.tip{background:#e6f4ea;border-left:3px solid #0f9d58;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}th{background:#f1f3f4;padding:9px;text-align:left;font-weight:600}td{padding:9px;border-bottom:1px solid #e8eaed;vertical-align:top}tr:last-child td{border-bottom:none}.rl{list-style:none;padding:0;margin:0}.rl li{padding:4px 0;font-size:13px;color:#1a73e8}.rl li::before{content:'📄 '}
+</style>
+</head>
+<body>
+
+<!-- 元信息
+生成时间：2026-05-26 21:02
+模式：方案设计
+用户原始问题：帮我编写一个双相机拍物料对角的纠偏场景方案，无标定板
+关键参数：
+  相机数量：双相机（同侧，拍对角）
+  安装方式：静止安装
+  应用类型：纠偏
+  机构类型：XYR一体
+  旋转需求：有（需输出角度）
+  工具共轴性：不共轴（偏心）
+  标定条件：无标定板
+-->
+
+<div class="header">
+  <h1>🎯 双相机对角纠偏-无标定板-偏心旋转</h1>
+  <div class="sub">生成时间：2026-05-26 21:02 &nbsp;·&nbsp; 方案设计 &nbsp;·&nbsp; 定位引导</div>
+</div>
+
+<div class="card">
+  <h2>📋 场景分析</h2>
+  <p>双相机静止安装，分别拍摄大物料对角两个特征点。机构为XYR一体，工具偏心安装。无标定板时，两相机各自与机构做十二点标定（产品特征点代替标定板），两相机通过机构物理坐标系统统一，实现对物料对角的XY+角度纠偏。</p>
+  <table>
+    <tr><th>关键参数</th><th>确认值</th></tr>
+    
+<tr><td>相机数量与安装方式</td><td>双相机，同侧静止安装（拍对角）</td></tr>
+<tr><td>应用类型</td><td>纠偏（机构带物料，纠正后放置）</td></tr>
+<tr><td>机构类型</td><td>XYR一体</td></tr>
+<tr><td>旋转需求</td><td>有（需输出角度偏差）</td></tr>
+<tr><td>工具共轴性</td><td>不共轴（偏心）</td></tr>
+<tr><td>标定条件</td><td>无标定板 → 产品特征点代替</td></tr>
+<tr><td>标定方案</td><td>双十二点标定（两相机各自做平移旋转标定）</td></tr>
+<tr><td>计算模型</td><td>单点纠偏（内部加载主相机标定文件）</td></tr>
+
+  </table>
+</div>
+
+<div class="card">
+  <h2>🗺️ 定位方案思路</h2>
+  <div class="flow">
+    
+<span class="fb fb-b">主相机十二点标定<small>（像素↔物理）</small></span>
+<span class="fa">+</span>
+<span class="fb fb-b">辅相机十二点标定<small>（像素↔物理）</small></span>
+<span class="fa">→</span>
+<span class="fb fb-b">两相机拍对角特征点</span>
+<span class="fa">→</span>
+<span class="fb fb-b">标定转换<small>（各自像素→机构物理）</small></span>
+<span class="fa">→</span>
+<span class="fb fb-b">点点测量<small>（求中点+角度）</small></span>
+<span class="fa">→</span>
+<span class="fb fb-b">标定转换<small>（机构物理→主相机像素）</small></span>
+<span class="fa">→</span>
+<span class="fb fb-o">单点纠偏计算<small>（已加载标定文件）</small></span>
+<span class="fa">→</span>
+<span class="fb fb-r">输出纠偏坐标→PLC</span>
+
+  </div>
+  <div class="tip">关键思路：无标定板时，两相机各自通过产品特征点与机构做十二点标定，建立独立的像素→物理转换关系。两相机共享同一个机构物理坐标系，即可在物理空间中直接计算对角中点和连线角度，再转回主相机像素坐标输入单点纠偏模块。<b>注意两相机第五点拍照位偏移量需补偿</b>。</div>
+</div>
+
+<div class="card">
+  <h2>🔧 VM视觉流程图</h2>
+  <h3>主相机标定流程（十二点平移旋转标定）</h3><div style="position:relative;width:500px;height:508px;margin-bottom:16px;"><svg width="500" height="508" style="position:absolute;top:0;left:0;pointer-events:none;"><defs><marker id="calib-main" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/></marker></defs><line x1="120" y1="58" x2="120" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-main)"/><line x1="120" y1="128" x2="120" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-main)"/><line x1="120" y1="198" x2="120" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-main)"/><line x1="120" y1="268" x2="120" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-main)"/><line x1="120" y1="338" x2="120" y2="378" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-main)"/><line x1="120" y1="408" x2="120" y2="448" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-main)"/><polyline points="120,198 120,219 290,219 290,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#calib-main)"/><polyline points="290,268 290,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/><line x1="400" y1="58" x2="400" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-main)"/><polyline points="400,128 400,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/></svg><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:30px;width:140px;">图像源</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:100px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:170px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:240px;width:140px;">圆查找(精定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:310px;width:140px;">平移旋转标定</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:380px;width:140px;">格式化</div><div style="position:absolute;height:28px;line-height:28px;background:#4A3FB5;border:1.5px solid #4A3FB5;color:#fff;border-radius:8px;text-align:center;font-size:13px;font-weight:600;box-sizing:border-box;left:50px;top:450px;width:140px;">发送数据</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:220px;top:240px;width:140px;">直线查找(角度查找)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:330px;top:30px;width:140px;">接收数据</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:330px;top:100px;width:140px;">协议解析</div></div><p style="font-size:12px;color:#888;margin:-8px 0 12px;">标定点为产品特征点（圆孔/Mark点/角点），机构带产品运动至主相机视野内，PLC发送机械手实时坐标触发拍照</p><h3>辅相机标定流程（十二点平移旋转标定）</h3><div style="position:relative;width:500px;height:508px;margin-bottom:16px;"><svg width="500" height="508" style="position:absolute;top:0;left:0;pointer-events:none;"><defs><marker id="calib-aux" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/></marker></defs><line x1="120" y1="58" x2="120" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-aux)"/><line x1="120" y1="128" x2="120" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-aux)"/><line x1="120" y1="198" x2="120" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-aux)"/><line x1="120" y1="268" x2="120" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-aux)"/><line x1="120" y1="338" x2="120" y2="378" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-aux)"/><line x1="120" y1="408" x2="120" y2="448" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-aux)"/><polyline points="120,198 120,219 290,219 290,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#calib-aux)"/><polyline points="290,268 290,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/><line x1="400" y1="58" x2="400" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib-aux)"/><polyline points="400,128 400,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/></svg><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:30px;width:140px;">图像源</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:100px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:170px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:240px;width:140px;">圆查找(精定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:310px;width:140px;">平移旋转标定</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:380px;width:140px;">格式化</div><div style="position:absolute;height:28px;line-height:28px;background:#4A3FB5;border:1.5px solid #4A3FB5;color:#fff;border-radius:8px;text-align:center;font-size:13px;font-weight:600;box-sizing:border-box;left:50px;top:450px;width:140px;">发送数据</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:220px;top:240px;width:140px;">直线查找(角度查找)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:330px;top:30px;width:140px;">接收数据</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:330px;top:100px;width:140px;">协议解析</div></div><p style="font-size:12px;color:#888;margin:-8px 0 12px;">辅相机标定方式与主相机一致（9平移+3旋转），机构带产品运动至辅相机视野内。两相机共用同一机构坐标系，无需映射标定</p><h3>生产流程（双相机对角纠偏）</h3><div style="position:relative;width:790px;height:758px;margin-bottom:16px;"><svg width="790" height="758" style="position:absolute;top:0;left:0;pointer-events:none;"><defs><marker id="prod" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/></marker></defs><line x1="120" y1="58" x2="120" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="120" y1="128" x2="120" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="120" y1="198" x2="120" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="120" y1="268" x2="120" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><polyline points="120,198 120,219 290,219 290,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#prod)"/><polyline points="290,268 290,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/><line x1="520" y1="58" x2="520" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="520" y1="128" x2="520" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="520" y1="198" x2="520" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="520" y1="268" x2="520" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><polyline points="520,198 520,219 690,219 690,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#prod)"/><polyline points="690,268 690,285 520,285 520,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/><line x1="320" y1="448" x2="320" y2="488" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="320" y1="518" x2="320" y2="558" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="320" y1="588" x2="320" y2="628" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="320" y1="658" x2="320" y2="698" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><polyline points="120,338 120,395 320,395 320,418" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#prod)"/><polyline points="520,338 520,395 320,395 320,418" stroke="#6E5BC7" stroke-width="1.5" fill="none"/></svg><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:30px;width:140px;">图像源(主相机)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:100px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:170px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:240px;width:140px;">圆查找(精定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:50px;top:310px;width:140px;">标定转换(主→机构)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:220px;top:240px;width:140px;">直线查找(角度查找)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:450px;top:30px;width:140px;">图像源(辅相机)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:450px;top:100px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:450px;top:170px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:450px;top:240px;width:140px;">圆查找(精定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:450px;top:310px;width:140px;">标定转换(辅→机构)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:620px;top:240px;width:140px;">直线查找(角度查找)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:250px;top:420px;width:140px;">点点测量</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:250px;top:490px;width:140px;">标定转换(机构→主相机)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:250px;top:560px;width:140px;">单点纠偏</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;font-weight:normal;box-sizing:border-box;left:250px;top:630px;width:140px;">格式化</div><div style="position:absolute;height:28px;line-height:28px;background:#4A3FB5;border:1.5px solid #4A3FB5;color:#fff;border-radius:8px;text-align:center;font-size:13px;font-weight:600;box-sizing:border-box;left:250px;top:700px;width:140px;">发送数据</div></div><p style="font-size:12px;color:#888;margin:-8px 0 12px;">主辅相机同时拍对角→各自标定转换至机构物理坐标系→点点测量求中点和角度→转回主相机像素坐标系→单点纠偏输出绝对坐标</p>
+</div>
+
+<div class="card">
+  <h2>⚙️ 操作要点</h2>
+  
+<div class="phase pc">
+  <div class="ph">标定阶段（双相机各自十二点平移旋转标定 · 产品特征代替标定板）</div>
+  <div class="flow">
+    <span class="fb fb-b">选产品特征点</span><span class="fa">→</span>
+    <span class="fb fb-b">机构走9平移+3旋转</span><span class="fa">→</span>
+    <span class="fb fb-b">记录像素+物理</span><span class="fa">→</span>
+    <span class="fb fb-g">主相机标定完成</span>
+    <span class="fa" style="margin:0 2px;">|</span>
+    <span class="fb fb-b">辅相机同理</span><span class="fa">→</span>
+    <span class="fb fb-g">辅相机标定完成</span>
+  </div>
+  <ol class="steps">
+    <li><span class="sn">1</span><b>统一产品特征点</b>：在大物料对角两端各选一个稳定特征点（圆孔优先 > Mark点 > 角点），确保主辅相机分别能拍到各自对角的特征点，边沿清晰、光照稳定</li>
+    <li><span class="sn">2</span><b>搭建主相机标定方案</b>：图像源(主相机) → 轮廓匹配(粗定位) → 位置修正 → 圆查找(精定位) + 直线查找(角度查找) → 平移旋转标定</li>
+    <li><span class="sn">3</span><b>配置通信</b>：添加接收数据和协议解析模块，PLC每到位一次发送 (C1,x,y,r) 触发主相机标定拍照</li>
+    <li><span class="sn">4</span><b>主相机平移标定</b>：机构带产品在主相机视野内走Z字形9个位置（覆盖视野1/3以上），每到位拍照记录像素坐标和物理坐标</li>
+    <li><span class="sn">5</span><b>主相机旋转标定</b>：回到第5点位置，R轴顺/逆时针旋转3次（每次10-30°），XY保持不动，记录特征点像素变化以拟合旋转中心</li>
+    <li><span class="sn">6</span><b>验证主相机标定</b>：平移旋转标定模块参数——标定类型=平移旋转标定，相机模式=相机静止，自由度=2，平移次数=9，旋转次数=3。检查状态=1、平移像素误差&lt;1像素、旋转像素误差&lt;0.5像素</li>
+    <li><span class="sn">7</span><b>辅相机标定</b>：机构带产品移动至辅相机视野内，使用<b>相同的产品特征点</b>重复步骤2-6，完成辅相机十二点标定。两相机共用同一机构物理坐标系</li>
+    <li><span class="sn">8</span><b>记录两相机第五点偏移量</b>：标定完成后，记录主相机第五点的物理坐标 (X5_main, Y5_main) 和辅相机第五点的物理坐标 (X5_aux, Y5_aux)，计算偏移量 ΔX = X5_main - X5_aux, ΔY = Y5_main - Y5_aux，用于后续验证两家标定物理坐标一致性</li>
+  </ol>
+</div>
+
+<div class="phase pt">
+  <div class="ph">示教阶段（建立双相机基准姿态）</div>
+  <div class="flow">
+    <span class="fb fb-b">物料基准姿态</span><span class="fa">→</span>
+    <span class="fb fb-b">两相机同时拍对角</span><span class="fa">→</span>
+    <span class="fb fb-b">求基准中点+角度</span><span class="fa">→</span>
+    <span class="fb fb-g">创建基准</span>
+  </div>
+  <ol class="steps">
+    <li><span class="sn sn-g">1</span>以基准姿态（角度=0）吸取物料，移动到拍照位（机构物理坐标为基准拍照位）</li>
+    <li><span class="sn sn-g">2</span>两相机同时拍摄物料对角，分别提取特征点像素坐标和角度</li>
+    <li><span class="sn sn-g">3</span>主相机特征点经标定转换到机构物理坐标P_main，辅相机特征点经标定转换到机构物理坐标P_aux</li>
+    <li><span class="sn sn-g">4</span>点点测量计算中点 P_center = (P_main + P_aux) / 2 和连线角度 θ_ref</li>
+    <li><span class="sn sn-g">5</span>将中点 P_center 通过标定转换（机构→主相机）转回主相机像素坐标系，得到基准像素坐标</li>
+    <li><span class="sn sn-g">6</span>记录示教物理点为此时机构物理坐标。在单点纠偏模块中配置：填写示教物理点、订阅基准像素坐标、点击"创建基准"</li>
+  </ol>
+</div>
+
+<div class="phase pp">
+  <div class="ph">生产阶段（双相机对角纠偏计算）</div>
+  <div class="flow">
+    <span class="fb fb-o">移动至拍照位</span><span class="fa">→</span>
+    <span class="fb fb-b">两相机拍对角</span><span class="fa">→</span>
+    <span class="fb fb-b">求中点+角度</span><span class="fa">→</span>
+    <span class="fb fb-o">单点纠偏</span><span class="fa">→</span>
+    <span class="fb fb-r">输出绝对坐标→PLC</span>
+  </div>
+  <ol class="steps">
+    <li><span class="sn sn-o">1</span>机构带物料移动到拍照位（须与示教拍照位一致，拍照姿态和工作距离保持不变）</li>
+    <li><span class="sn sn-o">2</span>两相机同时拍照，分别提取对角特征点的像素坐标和角度</li>
+    <li><span class="sn sn-o">3</span>主相机特征点经标定转换→机构物理坐标 P'_main，辅相机特征点经标定转换→机构物理坐标 P'_aux</li>
+    <li><span class="sn sn-o">4</span>点点测量计算当前中点 P'_center 和角度 θ'_line</li>
+    <li><span class="sn sn-o">5</span>标定转换将 P'_center 从机构物理坐标系转回主相机像素坐标系，得到当前像素坐标</li>
+    <li><span class="sn sn-o">6</span>单点纠偏模块加载主相机标定文件，将基准像素和当前像素均转换到物理坐标系，计算偏差（ΔX, ΔY, Δθ），输出绝对纠偏坐标</li>
+    <li><span class="sn sn-o">7</span>格式化模块收集偏差结果，发送数据模块将绝对坐标发送给PLC，引导机构完成纠偏放置</li>
+  </ol>
+</div>
+
+</div>
+
+<div class="card">
+  <h2>⚠️ 注意事项</h2>
+  
+<div class="warn"><b>产品特征点稳定性是关键</b>：无标定板时标定精度完全依赖产品特征点提取精度。建议先做30次静态测试验证特征点重复性（像素波动≤1像素）。如果产品表面反光、毛刺或塌边，需增加光源或在产品上增设辅助Mark点。</div>
+<div class="warn"><b>两相机第五点偏移量必须补偿</b>：两相机各自做十二点标定时，第五点（旋转中心位置）的物理坐标不同。生产时机构只能移动到一个拍照位，两相机各拍对角，此时两个特征点在物理坐标系中的坐标差即为两相机第五点偏移量加上物料实际姿态偏移。需确保两相机标定转换后的物理坐标在统一坐标系下一致。</div>
+<div class="warn"><b>机构拍照位须与示教位一致</b>：单点纠偏模块的基准建立在示教拍照位处，生产时拍照位必须与示教时完全一致（包括XY坐标和R轴角度）。如果因物料来料位置变化需要调整拍照位，则拍照位变化量需补偿到最终输出中。</div>
+
+</div>
+
+<div class="card">
+  <h2>📚 参考文档</h2>
+  <ul class="rl">
+    
+<li>assets/2.生产计算原理/双相机定位引导应用案例.md</li>
+<li>assets/2.生产计算原理/单相机常规纠偏场景说明文档.md</li>
+<li>assets/2.生产计算原理/定位引导项目应用案例汇总.md</li>
+<li>assets/1.标定原理/标定场景与原理.md</li>
+<li>assets/3.定位误差分析/定位项目误差分析及精度提高.md</li>
+
+  </ul>
+</div>
+
+</body>
+</html>

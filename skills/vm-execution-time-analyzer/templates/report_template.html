@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>耗时分析报告</title>
+<script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js">
+</script>
+<style>
+  :root {
+    --primary: #1a237e;
+    --accent: #3949ab;
+    --bg: #f5f6fa;
+    --card: #ffffff;
+    --text: #333333;
+    --muted: #888888;
+    --danger: #d32f2f;
+    --warn: #ef6c00;
+    --ok: #2e7d32;
+    --border: #e0e0e0;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Microsoft YaHei', sans-serif;
+    font-size: 14px; color: var(--text); background: var(--bg); line-height: 1.6;
+  }
+  .container { max-width: 1500px; margin: 0 auto; padding: 24px; }
+
+  /* 标题 */
+  h1 {
+    font-size: 1.7em; color: var(--primary); border-bottom: 3px solid var(--primary);
+    padding-bottom: 12px; margin-bottom: 8px;
+  }
+  h2 {
+    font-size: 1.3em; color: var(--primary); margin: 28px 0 14px;
+    border-bottom: 1px solid var(--border); padding-bottom: 6px;
+  }
+  h3 { font-size: 1.1em; margin: 18px 0 10px; color: #444; }
+  .meta { color: var(--muted); font-size: 0.9em; margin-bottom: 24px; }
+
+  /* 评估卡片 */
+  .eval-summary {
+    background: var(--card); border-left: 5px solid var(--primary);
+    padding: 18px 24px; border-radius: 8px; margin: 16px 0;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06);
+  }
+  .eval-text { font-size: 1.05em; color: var(--text); margin-bottom: 14px; line-height: 1.7; }
+  .eval-stats { display: flex; flex-wrap: wrap; gap: 10px 28px; }
+  .eval-stats span { font-size: 0.95em; }
+  .eval-stats strong { color: var(--primary); }
+  .warn { color: var(--danger) !important; }
+
+  /* 表格 */
+  .table-wrap {
+    overflow-x: auto; overflow-y: auto; max-height: 480px;
+    margin: 14px 0; background: var(--card); border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06);
+  }
+  table { border-collapse: collapse; width: 100%; min-width: 960px; }
+  th, td { border: 1px solid var(--border); padding: 7px 10px; text-align: center; font-size: 0.88em; }
+  th { background: #e8eaf6; font-weight: 700; position: sticky; top: 0; z-index: 1; }
+  td { background: var(--card); }
+  tr:hover td { background: #f0f0ff; }
+  .vol-high { color: var(--danger); font-weight: bold; }
+  .vol-mid { color: var(--warn); font-weight: bold; }
+
+  /* 图表网格 */
+  .chart-row { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin: 18px 0; }
+  .chart-box {
+    background: var(--card); border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,.06);
+    padding: 14px; min-height: 420px;
+  }
+  .chart-box.full { grid-column: 1 / -1; min-height: 480px; }
+
+  /* 切换按钮 */
+  .switch-bar { display: flex; gap: 10px; margin: 12px 0; }
+  .switch-btn {
+    padding: 7px 18px; border: 2px solid #ccc; border-radius: 20px; cursor: pointer;
+    background: var(--card); font-size: 0.9em; font-weight: 500; transition: all .2s;
+  }
+  .switch-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .switch-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); }
+
+  /* 模块标签 */
+  .module-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0; align-items: center; }
+  .module-tab {
+    padding: 5px 14px; border: 2px solid #ddd; border-radius: 18px; cursor: pointer;
+    font-size: 0.84em; background: var(--card); transition: all .2s; white-space: nowrap;
+  }
+  .module-tab:hover { border-color: var(--accent); color: var(--accent); }
+  .module-tab.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  /* ===== 术语解释面板 ===== */
+  .glossary-toggle {
+    display: inline-block; padding: 6px 16px; margin-bottom: 12px;
+    background: var(--card); border: 2px solid var(--accent); border-radius: 20px;
+    cursor: pointer; font-size: 0.9em; color: var(--accent); font-weight: 600;
+    transition: all .2s;
+  }
+  .glossary-toggle:hover { background: var(--accent); color: #fff; }
+  .glossary {
+    display: none; background: var(--card); border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(0,0,0,.06); padding: 20px 24px; margin-bottom: 18px;
+    columns: 2; column-gap: 32px;
+  }
+  .glossary.show { display: block; }
+  .glossary dl { margin: 0; break-inside: avoid; }
+  .glossary dt {
+    font-weight: 700; color: var(--primary); font-size: 1.05em;
+    margin-top: 14px; margin-bottom: 4px; padding-bottom: 2px;
+    border-bottom: 1px solid #e8eaf6;
+  }
+  .glossary dt:first-child { margin-top: 0; }
+  .glossary dd {
+    margin: 0 0 6px 0; color: #555; font-size: 0.9em; line-height: 1.6;
+  }
+  .glossary .good { color: var(--ok); }
+  .glossary .warn { color: var(--warn); }
+  .glossary .bad { color: var(--danger); }
+
+  /* 表头提示图标 */
+  th abbr { text-decoration: none; border-bottom: 1px dotted #888; cursor: help; }
+  th .help-icon { display: inline-block; width: 14px; height: 14px; border-radius: 50%;
+    background: #ccc; color: #fff; font-size: 10px; line-height: 14px; text-align: center;
+    margin-left: 3px; cursor: help; vertical-align: middle; }
+
+  /* ===== 多选下拉 ===== */
+  .multi-dropdown { position: relative; display: inline-block; vertical-align: middle; }
+  .multi-dropdown-btn {
+    padding: 5px 14px; border: 2px solid #ccc; border-radius: 6px;
+    background: var(--card); cursor: pointer; font-size: 0.85em;
+    white-space: nowrap; transition: border-color .2s;
+  }
+  .multi-dropdown-btn:hover { border-color: var(--accent); }
+  .multi-dropdown-panel {
+    display: none; position: absolute; top: 100%; left: 0; z-index: 100;
+    background: var(--card); border: 2px solid var(--accent); border-radius: 8px;
+    max-height: 280px; overflow-y: auto; min-width: 220px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.15); padding: 6px 0;
+  }
+  .multi-dropdown-panel.show { display: block; }
+  .multi-dropdown-panel label {
+    display: flex; align-items: center; gap: 7px; padding: 5px 14px;
+    cursor: pointer; font-size: 0.83em; white-space: nowrap; transition: background .1s;
+  }
+  .multi-dropdown-panel label:hover { background: #eef0ff; }
+  .multi-dropdown-panel label input[type=checkbox] { cursor: pointer; }
+
+  /* 图例条 */
+  .legend-bar { display: flex; gap: 20px; flex-wrap: wrap; margin: 8px 0 16px;
+    background: var(--card); padding: 10px 16px; border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0,0,0,.06); font-size: 0.88em; }
+  .legend-item { display: flex; align-items: center; gap: 6px; }
+  /* ===== 按流程折叠面板 ===== */
+  .proc-section { margin: 10px 0; border: 1px solid var(--border); border-radius: 8px;
+    overflow: hidden; background: var(--card); box-shadow: 0 1px 3px rgba(0,0,0,.04); }
+  .proc-header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 16px; cursor: pointer; user-select: none;
+    background: #f0f2ff; transition: background .15s;
+  }
+  .proc-header:hover { background: #e3e6ff; }
+  .proc-header .proc-title { font-weight: 700; font-size: 1.02em; color: var(--primary); }
+  .proc-header .proc-meta { font-size: 0.85em; color: var(--muted); display: flex; gap: 16px; align-items: center; }
+  .proc-header .arrow { font-size: 0.8em; transition: transform .2s; color: var(--muted); }
+  .proc-section.open .proc-header .arrow { transform: rotate(90deg); }
+  .proc-body { display: none; }
+  .proc-section.open .proc-body { display: block; }
+  .proc-body .table-wrap { margin: 0; border-radius: 0; box-shadow: none; }
+  .proc-badge { display: inline-block; padding: 2px 8px; border-radius: 10px;
+    font-size: 0.8em; font-weight: 600; }
+  .proc-badge.warn { background: #fff3e0; }
+  .proc-badge.danger { background: #ffebee; }
+
+  /* 模块明细表流程筛选栏 */
+  .proc-filter-bar {
+    display: flex; align-items: center; flex-wrap: wrap; gap: 8px;
+    margin: 12px 0; padding: 10px 16px;
+    background: #f8f9ff; border-radius: 8px; border: 1px solid var(--border);
+  }
+  .proc-select {
+    padding: 6px 12px; border: 2px solid #ccc; border-radius: 6px;
+    background: var(--card); font-size: 0.9em; cursor: pointer;
+    max-width: 480px; transition: border-color .2s;
+  }
+  .proc-select:hover, .proc-select:focus { border-color: var(--accent); outline: none; }
+
+  /* 流程 Tab 栏 */
+  .proc-tab-bar {
+    display: flex; gap: 4px; margin: 14px 0 0; flex-wrap: wrap;
+    border-bottom: 2px solid var(--accent); overflow-x: auto;
+  }
+  .proc-tab {
+    padding: 8px 16px; border: 2px solid #ddd;
+    border-bottom: none; border-radius: 8px 8px 0 0;
+    cursor: pointer; background: #f0f0f0; font-size: 0.88em; font-weight: 500;
+    transition: all .2s; position: relative; top: 2px; white-space: nowrap;
+  }
+  .proc-tab:hover { background: #e8eaf6; color: var(--primary); }
+  .proc-tab.active {
+    background: var(--card); border-color: var(--accent);
+    color: var(--primary); font-weight: 700;
+  }
+  /* 模块耗时明细折叠面板 */
+  .proc-detail-section { margin: 0 0 4px; }
+  .proc-detail-body { margin: 0; }
+  .proc-detail-hidden { display: none; }
+  .proc-switch-bar { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0 12px;
+    align-items: center; padding: 8px 12px; background: #f8f9ff; border-radius: 6px; }
+  .proc-view-btn { font-size: 0.8em; padding: 4px 12px; }
+
+  /* 响应式 */
+  @media (max-width: 1000px) { .chart-row { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) {
+    .container { padding: 12px; }
+    .eval-stats { flex-direction: column; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+<h1>📊 方案耗时分析报告</h1>
+<p class="meta">生成时间: {{REPORT_TIME}}</p>
+
+<!-- ═══════════ 术语解释面板 ═══════════ -->
+<div>
+  <span class="glossary-toggle" onclick="document.getElementById('glossaryPanel').classList.toggle('show');this.textContent=document.getElementById('glossaryPanel').classList.contains('show')?'📖 收起名词解释 ▴':'📖 展开名词解释 ▾'">📖 展开名词解释 ▾</span>
+</div>
+<div class="glossary" id="glossaryPanel">
+  <dl>
+    <dt>平均耗时 (Avg)</dt>
+    <dd>所有运行次数的耗时平均值，代表模块的<strong>典型运行速度</strong>。数值越小越快。</dd>
+
+    <dt>变异系数 (CV)</dt>
+    <dd>衡量耗时<strong>波动程度</strong>的核心指标。计算公式：<strong>CV = 标准差 ÷ 平均值 × 100%</strong>。<br/>
+    打个比方：如果平均耗时100ms，CV=10%意味着大多数情况下耗时在90~110ms之间；CV=50%则意味着耗时波动很大，从50ms到150ms都有可能。<br/>
+    <span class="good">🟢 CV &lt; 20%：运行稳定，耗时可预测</span> &nbsp;
+    <span class="warn">🟡 CV 20%~50%：存在一定波动，建议关注</span> &nbsp;
+    <span class="bad">🔴 CV &gt; 50%：波动剧烈，需排查偶发性异常</span></dd>
+
+    <dt>标准差 (Std)</dt>
+    <dd>反映每次运行的耗时与平均值之间的<strong>平均偏差</strong>。标准差越大，说明每次运行耗时忽高忽低，不稳定。</dd>
+
+    <dt>P95（95分位值）</dt>
+    <dd>表示<strong>95%的运行耗时都不超过此值</strong>。例如 P95=100ms，意味着100次运行中有95次耗时≤100ms。<br/>
+    相比最大值容易受偶发异常干扰，P95更能反映<strong>"绝大多数情况"</strong>的真实性能。</dd>
+
+    <dt>P50/P75/P99</dt>
+    <dd><strong>P50</strong>（中位数）：一半运行耗时低于此值，一半高于此值，代表"正常情况"。<br/>
+    <strong>P75</strong>：75%的运行耗时不超过此值。<br/>
+    <strong>P99</strong>：99%的运行耗时不超过此值，仅1%的极端情况会超过。</dd>
+
+    <dt>极差 (Range)</dt>
+    <dd><strong>最大值 − 最小值</strong>。反映一次最好和一次最差之间的差距。极差大说明有偶发性慢速运行。</dd>
+
+    <dt>超2倍均值次数</dt>
+    <dd>耗时超过平均值2倍的<strong>异常运行次数</strong>。例如平均值50ms，某次运行超过100ms即计入。<br/>
+    次数越多说明<strong>偶发性卡顿</strong>越严重，通常与GC、资源竞争、IO等待有关。</dd>
+
+    <dt>波动等级</dt>
+    <dd>基于CV值对模块稳定性做的简化评级：<br/>
+    <span class="good">🟢 低波动</span> — 耗时稳定可靠，无需关注<br/>
+    <span class="warn">🟡 中波动</span> — 有一定波动，建议列入观察列表<br/>
+    <span class="bad">🔴 高波动</span> — 不稳定，需排查根因（算法参数/图像变化/系统负载）</dd>
+
+    <dt>耗时占比</dt>
+    <dd>该流程的耗时占<strong>全部流程总耗时</strong>的百分比。占比越高说明是<strong>性能瓶颈</strong>所在，优化时应优先考虑。</dd>
+
+    <dt>流程占比（模块级）</dt>
+    <dd>该模块的耗时占<strong>所在流程所有模块总耗时</strong>的百分比。反映了该模块在其所属流程中的重要程度。<br/>
+    占比大的模块如果同时波动高，对整体稳定性的影响就会很大；反之占比很小的模块即使波动剧烈，对整体影响也有限。</dd>
+
+    <dt>波动贡献指数 (VCI)</dt>
+    <dd>衡量模块对<strong>整体方案/流程稳定性影响</strong>的综合指标。计算公式：<strong>VCI = CV × 流程占比</strong>。<br/>
+    打个比方：一个模块即使CV很高（自身很不稳定），但如果它只占总耗时的1%，那它对整体"忽快忽慢"的感受贡献很小；<br/>
+    反之，一个占总耗时40%的模块，哪怕CV只有20%，它的小波动也会被放大影响整体。<br/>
+    VCI 把这两个因素乘在一起，帮你找到<strong>真正导致整体方案不稳定的"元凶"</strong>。<br/>
+    <span class="good">🟢 低影响：流程内VCI排序后80%</span> &nbsp;
+    <span class="warn">🟡 中影响：流程内VCI排序前5%~20%</span> &nbsp;
+    <span class="bad">🔴 高影响：流程内VCI排序前5%</span><br/>
+    采用<strong>流程内百分位排序</strong>而非固定数字阈值——无论流程有2个还是20个模块，都能公平地找出影响最大的那几个。</dd>
+
+    <dt>排除前N次运行</dt>
+    <dd>分析时自动跳过VM启动后的前N次运行（默认5次）。因为启动初期存在<strong>预热阶段</strong>（JIT编译、缓存加载），耗时数据偏高，不代表真实运行性能。</dd>
+  </dl>
+</div>
+
+<!-- ═══════════ 波动图例 ═══════════ -->
+<div class="legend-bar" style="flex-direction:column;gap:8px;">
+  <div style="display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;">
+    <span style="font-weight:700;color:var(--primary);">📐 波动等级说明（自身稳定性，基于CV）：</span>
+    <span class="legend-item">🟢 低波动 (CV&lt;20%) = 稳定</span>
+    <span class="legend-item">🟡 中波动 (CV 20~50%) = 偶有波动</span>
+    <span class="legend-item">🔴 高波动 (CV&gt;50%) = 不稳定</span>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:8px 20px;align-items:center;">
+    <span style="font-weight:700;color:var(--primary);">📐 波动影响评级（流程内VCI百分位排序，前5%高影响、5%~20%中影响、后80%低影响）：</span>
+    <span class="legend-item">🟢 低影响（流程内VCI排序后80%）</span>
+    <span class="legend-item">🟡 中影响（流程内VCI排序前5%~20%）</span>
+    <span class="legend-item">🔴 高影响（流程内VCI排序前5%）</span>
+  </div>
+</div>
+
+<!-- ═══════════ 1. 整体方案耗时评估 ═══════════ -->
+<h2>一、整体方案耗时评估</h2>
+{{EVALUATION_TABLES}}
+
+<!-- ═══════════ 2. 耗时分析图谱 ═══════════ -->
+<h2 style="display:flex;align-items:center;gap:12px;">
+  二、耗时分析图谱
+  <span id="section2Toggle" class="glossary-toggle" style="margin:0;"
+    onclick="toggleSection2()">📂 展开 ▾</span>
+</h2>
+<div id="section2Content" style="display:none;">
+
+<!-- 1. 流程耗时分布（对比 + 占比） -->
+<h3 style="margin:4px 0 8px;">📊 流程耗时分布</h3>
+<div class="chart-row">
+  <div class="chart-box" id="chartProcBar" style="min-height:400px;"></div>
+  <div class="chart-box" id="chartPieProc"></div>
+</div>
+
+<!-- 2. 模块耗时分析（分布 + 占比） -->
+<h3 style="margin:4px 0 8px;">📊 模块耗时分析</h3>
+<div class="chart-row">
+  <div class="chart-box" style="min-height:460px;">
+    <div class="module-tabs" id="barSelector" style="margin-top:0;margin-bottom:8px;">
+      <span style="line-height:34px;font-weight:700;margin-right:10px;color:var(--primary);">📌 模块耗时分布:</span>
+      <span style="font-size:0.85em;color:var(--muted);margin-right:4px;">流程</span>
+      <select id="barProcSelect" style="padding:5px 10px;border:2px solid #ccc;border-radius:6px;font-size:0.85em;background:var(--card);cursor:pointer;margin-right:12px;">
+        <option value="all">全部</option>
+      </select>
+      <span style="font-size:0.85em;color:var(--muted);margin-right:4px;">模块</span>
+      <div class="multi-dropdown" id="barModDropdown">
+        <button class="multi-dropdown-btn" id="barModBtn">全部模块 ▾</button>
+        <div class="multi-dropdown-panel" id="barModPanel"></div>
+      </div>
+    </div>
+    <div id="chartBar" style="width:100%;height:400px;"></div>
+  </div>
+  <div class="chart-box" style="min-height:460px;">
+    <div style="margin:0 0 8px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+      <span style="font-weight:700;color:var(--primary);font-size:0.95em;">📈 各模块类型耗时占比</span>
+      <span style="font-size:0.85em;color:var(--muted);">流程:</span>
+      <select id="pieModProcSelect" style="padding:5px 10px;border:2px solid #ccc;border-radius:6px;font-size:0.85em;background:var(--card);cursor:pointer;">
+        <option value="all">全部流程</option>
+      </select>
+    </div>
+    <div id="chartPieMod" style="width:100%;height:400px;"></div>
+  </div>
+</div>
+
+<!-- 3. 耗时曲线 -->
+<div class="module-tabs" id="curveSelector" style="margin-top:8px;">
+  <span style="line-height:34px;font-weight:700;margin-right:10px;color:var(--primary);">📉 耗时曲线:</span>
+  <span style="font-size:0.85em;color:var(--muted);margin-right:4px;">流程</span>
+  <select id="curveProcSelect" style="padding:5px 10px;border:2px solid #ccc;border-radius:6px;font-size:0.85em;background:var(--card);cursor:pointer;margin-right:10px;">
+    <option value="all">全部</option>
+  </select>
+  <span style="font-size:0.85em;color:var(--muted);margin-right:4px;">模块</span>
+  <div class="multi-dropdown" id="curveModDropdown">
+    <button class="multi-dropdown-btn" id="curveModBtn">全部模块 ▾</button>
+    <div class="multi-dropdown-panel" id="curveModPanel"></div>
+  </div>
+</div>
+<div class="chart-row">
+  <div class="chart-box full" id="chartCurve" style="min-height:520px;"></div>
+</div>
+
+</div><!-- /section2Content -->
+
+<!-- 流程明细数据 JSON（供前端动态表格使用） -->
+<script id="procViewData" type="application/json">{{PROC_VIEW_DATA}}</script>
+
+</div><!-- /container -->
+
+<script>
+// ═══════════ 图表数据 ═══════════
+var CHART_DATA = {{CHART_DATA}};
+
+// ═══════════ ECharts 实例 ═══════════
+var barChart = echarts.init(document.getElementById('chartBar'));
+var pieProcChart = echarts.init(document.getElementById('chartPieProc'));
+var pieModChart = echarts.init(document.getElementById('chartPieMod'));
+var curveChart = echarts.init(document.getElementById('chartCurve'));
+var procBarChart = echarts.init(document.getElementById('chartProcBar'));
+
+var allModules = CHART_DATA.modules;
+var procedures = CHART_DATA.procedure_summaries;
+
+// ── 模块类型占比饼图：选中流程 ──
+var pieModProc = 'all';
+
+// ── 柱状图选择器状态 ──
+var barProc = 'all';
+var checkedBarModules = {};
+
+// ── 曲线图选择器状态 ──
+var curveProc = 'all';
+
+
+// ---- 筛选工具 ----
+function getProcModules(procId) {
+  if (procId === 'all') return allModules;
+  var pid = parseInt(procId);
+  return allModules.filter(function(m) { return m.procedure_id === pid; });
+}
+
+// ---- 通用表格排序 ----
+var tableSortOrders = {};
+
+function makeTableSortable(tableId) {
+  var table = document.getElementById(tableId);
+  if (!table) return;
+  var headers = table.querySelectorAll('thead th');
+  headers.forEach(function(th, colIndex) {
+    th.style.cursor = 'pointer';
+    th.title = (th.title || '') + ' (点击排序)';
+    th.addEventListener('click', function() {
+      sortTable(table, colIndex);
+    });
+  });
+}
+
+function sortTable(table, colIndex) {
+  var tbody = table.querySelector('tbody');
+  if (!tbody) return;
+  var rows = Array.from(tbody.querySelectorAll('tr'));
+  if (rows.length === 0) return;
+
+  var key = table.id + '_' + colIndex;
+  var currentOrder = tableSortOrders[key] || null;
+
+  var newOrder;
+  if (currentOrder === null) newOrder = 'asc';
+  else if (currentOrder === 'asc') newOrder = 'desc';
+  else newOrder = null;
+  tableSortOrders[key] = newOrder;
+
+  if (newOrder === null) {
+    rows.sort(function(a, b) { return 0; });
+  } else {
+    rows.sort(function(a, b) {
+      var cellA = a.cells[colIndex];
+      var cellB = b.cells[colIndex];
+      var valA = (cellA && cellA.textContent.trim()) || '';
+      var valB = (cellB && cellB.textContent.trim()) || '';
+      var numA = parseFloat(valA);
+      var numB = parseFloat(valB);
+      if (!isNaN(numA) && !isNaN(numB)) {
+        return newOrder === 'asc' ? numA - numB : numB - numA;
+      }
+      return newOrder === 'asc' ? valA.localeCompare(valB, 'zh-CN') : valB.localeCompare(valA, 'zh-CN');
+    });
+  }
+
+  rows.forEach(function(row) { tbody.appendChild(row); });
+
+  var headers = table.querySelectorAll('thead th');
+  headers.forEach(function(th, i) {
+    var oldIndicator = th.querySelector('.sort-indicator');
+    if (oldIndicator) oldIndicator.remove();
+    if (i === colIndex && newOrder) {
+      var indicator = document.createElement('span');
+      indicator.className = 'sort-indicator';
+      indicator.style.cssText = 'font-size:0.75em;margin-left:2px;';
+      indicator.textContent = newOrder === 'asc' ? ' ▲' : ' ▼';
+      th.appendChild(indicator);
+    }
+  });
+}
+
+// ---- 柱状图筛选 ----
+function getBarModules() {
+  var mods = barProc === 'all' ? allModules : getProcModules(barProc);
+  return mods.filter(function(m) { return checkedBarModules[m.module_name]; });
+}
+
+// ---- 曲线图：获取选中的项 ----
+function getCurveItems() {
+  var selected = window.getCheckedCurveMods ? window.getCheckedCurveMods() : [];
+  if (selected.length === 0) return { modules: [], procedures: [] };
+  var result = { modules: [], procedures: [] };
+  selected.forEach(function(key) {
+    if (key.indexOf('__proc_') === 0) {
+      var pid = parseInt(key.replace('__proc_', ''));
+      var procData = CHART_DATA.procedures.find(function(p) { return p.procedure_id === pid; });
+      if (procData && procData.time_series && procData.time_series.length > 0) {
+        result.procedures.push(procData);
+      }
+    } else {
+      var mods = curveProc === 'all' ? allModules : getProcModules(curveProc);
+      var match = mods.filter(function(m) { return m.module_name === key; });
+      result.modules = result.modules.concat(match);
+    }
+  });
+  return result;
+}
+
+// ---- 流程耗时对比柱状图 ----
+function renderProcBarChart() {
+  var procData = CHART_DATA.procedures;
+  if (!procData || procData.length === 0) return;
+  var xData = procData.map(function(p) { return '流程' + p.procedure_id; });
+  var avgData = procData.map(function(p) { return p.avg_ms; });
+  var maxData = procData.map(function(p) { return p.max_ms; });
+  var p95Data = procData.map(function(p) { return p.p95; });
+
+  procBarChart.setOption({
+    title: { text: '流程耗时对比 (Avg / Max / P95)', left: 'center', textStyle: { fontSize: 14 } },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['Avg(平均)', 'Max(最大)', 'P95'], top: 'bottom' },
+    grid: { left: '10%', right: '5%', top: '16%', bottom: '16%' },
+    xAxis: { type: 'category', data: xData, axisLabel: { fontSize: 11 } },
+    yAxis: { type: 'value', name: 'ms' },
+    series: [
+      { name: 'Avg(平均)', type: 'bar', data: avgData, itemStyle: { color: '#42a5f5' }, barMaxWidth: 50,
+        label: { show: true, position: 'top', fontSize: 10, formatter: '{c}ms' } },
+      { name: 'Max(最大)', type: 'bar', data: maxData, itemStyle: { color: '#ef5350' }, barMaxWidth: 50 },
+      { name: 'P95', type: 'bar', data: p95Data, itemStyle: { color: '#ff9800' }, barMaxWidth: 50 }
+    ]
+  }, true);
+}
+
+// ---- 柱状图: Max/Avg/Min ----
+function renderBarChart() {
+  var mods = getBarModules();
+  if (mods.length === 0) mods = allModules;
+  var xData = [];
+  var maxData = [], avgData = [], minData = [];
+  mods.forEach(function(m) {
+    xData.push('P' + m.procedure_id + ' ' + m.module_name);
+    maxData.push(m.max_ms);
+    avgData.push(m.avg_ms);
+    minData.push(m.min_ms);
+  });
+
+  barChart.setOption({
+    title: { text: '📊 模块耗时分布 (Max / Avg / Min)', left: 'center', textStyle: { fontSize: 14 } },
+    tooltip: { trigger: 'axis', axisPointer: { type: 'shadow' } },
+    legend: { data: ['Max(最大)', 'Avg(平均)', 'Min(最小)'], right: 'right', orient: 'vertical', top: 'center' },
+    grid: { left: '15%', right: '6%', top: '14%', bottom: '10%' },
+    xAxis: { type: 'category', data: xData, axisLabel: { rotate: 35, fontSize: 10, interval: 0 } },
+    yAxis: { type: 'value', name: 'ms' },
+    series: [
+      { name: 'Max(最大)', type: 'bar', data: maxData, itemStyle: { color: '#ef5350' }, barMaxWidth: 30 },
+      { name: 'Avg(平均)', type: 'bar', data: avgData, itemStyle: { color: '#42a5f5' }, barMaxWidth: 30 },
+      { name: 'Min(最小)', type: 'bar', data: minData, itemStyle: { color: '#66bb6a' }, barMaxWidth: 30 }
+    ]
+  }, true);
+}
+
+// ---- 饼图1: 各流程耗时占比 ----
+function renderPieProcChart() {
+  var pieData = procedures.map(function(p) {
+    return { name: '流程' + p.procedure_id, value: Math.round(p.avg_ms * 10) / 10 };
+  });
+  pieProcChart.setOption({
+    title: { text: '各流程耗时占比', left: 'center', textStyle: { fontSize: 14 } },
+    tooltip: { trigger: 'item', formatter: function(p) { return p.name + '<br/>' + p.value + 'ms (' + p.percent + '%)'; } },
+    legend: { type: 'scroll', bottom: 0, textStyle: { fontSize: 10 } },
+    series: [{
+      type: 'pie', radius: ['38%', '68%'], center: ['50%', '47%'],
+      data: pieData,
+      label: { formatter: '{b}\n{d}%', fontSize: 10 },
+      emphasis: { label: { fontSize: 15, fontWeight: 'bold' }, itemStyle: { shadowBlur: 10 } }
+    }]
+  }, true);
+}
+
+// ---- 饼图2: 各模块类型耗时占比 ----
+function renderPieModChart() {
+  var modulesToUse = allModules;
+  var procLabel = '';
+  if (pieModProc !== 'all') {
+    var pid = parseInt(pieModProc);
+    modulesToUse = allModules.filter(function(m) { return m.procedure_id === pid; });
+    procLabel = '（流程' + pid + '）';
+  }
+  var byName = {};
+  modulesToUse.forEach(function(m) {
+    if (!byName[m.module_name]) byName[m.module_name] = 0;
+    byName[m.module_name] += m.total_ms;
+  });
+  var pieData = [];
+  for (var k in byName) pieData.push({ name: k, value: Math.round(byName[k] * 10) / 10 });
+  pieData.sort(function(a, b) { return b.value - a.value; });
+  if (pieData.length > 10) {
+    var top10 = pieData.slice(0, 10);
+    var otherSum = 0;
+    for (var i = 10; i < pieData.length; i++) otherSum += pieData[i].value;
+    top10.push({ name: '其他', value: Math.round(otherSum * 10) / 10 });
+    pieData = top10;
+  }
+  pieModChart.setOption({
+    title: { text: '📈 各模块类型耗时占比' + procLabel, left: 'center', textStyle: { fontSize: 14 } },
+    tooltip: { trigger: 'item', formatter: function(p) { return p.name + '<br/>' + p.value + 'ms (' + p.percent + '%)'; } },
+    legend: { type: 'scroll', bottom: 0, textStyle: { fontSize: 10 } },
+    series: [{
+      type: 'pie', radius: ['38%', '68%'], center: ['50%', '47%'],
+      data: pieData,
+      label: { formatter: '{b}\n{d}%', fontSize: 10 },
+      emphasis: { label: { fontSize: 15, fontWeight: 'bold' }, itemStyle: { shadowBlur: 10 } }
+    }]
+  }, true);
+}
+
+// ---- 时间序列曲线图 ----
+function renderCurveChart() {
+  var items = getCurveItems();
+  var allItems = items.procedures.concat(items.modules);
+  if (allItems.length === 0) {
+    curveChart.setOption({
+      title: { text: '请在上方选择模块或流程查看耗时曲线', left: 'center', top: 'center',
+        textStyle: { fontSize: 14, color: '#999' } },
+      series: []
+    }, true);
+    return;
+  }
+  var colors = ['#ff9800','#ef5350','#42a5f5','#66bb6a','#ab47bc','#26a69a',
+                '#ec407a','#5c6bc0','#8d6e63','#78909c','#d4e157','#ff7043',
+                '#29b6f6','#9ccc65'];
+  var series = [];
+  var allData = [];
+  var sharedLabels = (allItems[0] && allItems[0].time_labels) ? allItems[0].time_labels : [];
+  allItems.forEach(function(item, i) {
+    var label = item.module_name
+      ? ('P' + item.procedure_id + ' ' + item.module_name)
+      : ('📋 流程' + item.procedure_id + ' 总耗时');
+    var ts = item.time_series || [];
+    if (ts.length > 0) allData = allData.concat(ts);
+    series.push({
+      name: label,
+      type: 'line',
+      data: ts,
+      smooth: true,
+      symbol: 'none',
+      lineStyle: { width: item.module_name ? 1.5 : 2.5, color: colors[i % colors.length] },
+      emphasis: { focus: 'series' }
+    });
+  });
+
+  var labelInterval = Math.max(1, Math.floor(sharedLabels.length / 10));
+  curveChart.setOption({
+    title: { text: '' },
+    tooltip: {
+      trigger: 'axis',
+      formatter: function(params) {
+        var s = params[0].axisValueLabel + '<br/>';
+        params.forEach(function(p) {
+          s += p.marker + ' ' + p.seriesName + ': ' + p.value + 'ms<br/>';
+        });
+        return s;
+      }
+    },
+    legend: { type: 'scroll', bottom: 0, textStyle: { fontSize: 10 } },
+    grid: { left: '10%', right: '5%', top: '15%', bottom: '14%' },
+    xAxis: {
+      type: 'category', name: '时间',
+      data: sharedLabels,
+      axisLabel: { show: true, interval: labelInterval, rotate: 30, fontSize: 10 }
+    },
+    yAxis: { type: 'value', name: 'ms',
+      min: 0,
+      max: Math.ceil(Math.max.apply(null, allData) * 1.15) || 100
+    },
+    dataZoom: [
+      { type: 'inside', start: 0, end: 100 },
+      { type: 'slider', start: 0, end: 100, height: 20, bottom: 28 }
+    ],
+    series: series
+  }, true);
+}
+
+// ---- 全部渲染 ----
+function renderAll() { renderProcBarChart(); renderBarChart(); renderPieProcChart(); renderPieModChart(); renderCurveChart(); }
+
+// ---- 构建【柱状图】选择器 ----
+(function buildBarSelector() {
+  var procSel = document.getElementById('barProcSelect');
+  var modBtn = document.getElementById('barModBtn');
+  var modPanel = document.getElementById('barModPanel');
+
+  procedures.forEach(function(p) {
+    var opt = document.createElement('option');
+    opt.value = p.procedure_id;
+    opt.textContent = '流程' + p.procedure_id;
+    procSel.appendChild(opt);
+  });
+
+  function updateBtnText() {
+    var names = Object.keys(checkedBarModules).filter(function(k) { return checkedBarModules[k] && k !== '__all'; });
+    var total = Object.keys(checkedBarModules).filter(function(k) { return k !== '__all'; }).length;
+    if (names.length === 0) modBtn.textContent = '请选择 ▾';
+    else if (names.length === total && total > 0) modBtn.textContent = '全部模块 ▾';
+    else if (names.length === 1) modBtn.textContent = (names[0].length > 18 ? names[0].substring(0,16)+'…' : names[0]) + ' ▾';
+    else modBtn.textContent = '已选 ' + names.length + ' 项 ▾';
+  }
+
+  function rebuild() {
+    modPanel.innerHTML = '';
+    var mods = getProcModules(barProc);
+    var seen = {};
+
+    mods.forEach(function(m) {
+      if (seen[m.module_name]) return;
+      seen[m.module_name] = true;
+      if (!(m.module_name in checkedBarModules)) checkedBarModules[m.module_name] = true;
+
+      var label = document.createElement('label');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.value = m.module_name;
+      cb.checked = checkedBarModules[m.module_name];
+      cb.addEventListener('change', function() {
+        checkedBarModules[this.value] = this.checked;
+        updateBtnText();
+        renderBarChart();
+      });
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(m.module_name));
+      modPanel.appendChild(label);
+    });
+
+    var sep = document.createElement('div');
+    sep.style.cssText = 'height:1px;background:#e0e0e0;margin:4px 12px;';
+    modPanel.appendChild(sep);
+
+    var ta = document.createElement('div');
+    ta.style.cssText = 'font-size:0.8em;color:var(--accent);cursor:pointer;padding:4px 14px;';
+    ta.textContent = '全选 / 取消全选';
+    ta.addEventListener('click', function() {
+      var allSelected = Object.keys(checkedBarModules).filter(function(k) { return k !== '__all'; }).every(function(k) { return checkedBarModules[k]; });
+      var ns = !allSelected;
+      Object.keys(checkedBarModules).forEach(function(k) { if (k !== '__all') checkedBarModules[k] = ns; });
+      rebuild();
+      updateBtnText();
+      renderBarChart();
+    });
+    modPanel.appendChild(ta);
+
+    updateBtnText();
+  }
+
+  modBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    modPanel.classList.toggle('show');
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('barModDropdown').contains(e.target)) {
+      modPanel.classList.remove('show');
+    }
+  });
+
+  procSel.addEventListener('change', function() {
+    barProc = this.value;
+    rebuild();
+    renderBarChart();
+  });
+
+  rebuild();
+})();
+
+// ---- 构建【耗时曲线】选择器 ----
+(function buildCurveSelector() {
+  var procSel = document.getElementById('curveProcSelect');
+  var modBtn = document.getElementById('curveModBtn');
+  var modPanel = document.getElementById('curveModPanel');
+  var checkedCurveMods = {};
+
+  procedures.forEach(function(p) {
+    var opt = document.createElement('option');
+    opt.value = p.procedure_id;
+    opt.textContent = '流程' + p.procedure_id;
+    procSel.appendChild(opt);
+  });
+
+  function updateBtnText() {
+    var names = Object.keys(checkedCurveMods).filter(function(k) { return checkedCurveMods[k]; });
+    if (names.length === 0) modBtn.textContent = '请选择 ▾';
+    else if (names.length === 1) modBtn.textContent = (names[0].length > 20 ? names[0].substring(0,18)+'…' : names[0]) + ' ▾';
+    else modBtn.textContent = '已选 ' + names.length + ' 项 ▾';
+  }
+
+  function onCurveCheckChange(cb) {
+    if (cb.checked && !window._ctrlHeld) {
+      Object.keys(checkedCurveMods).forEach(function(k) { checkedCurveMods[k] = false; });
+      checkedCurveMods[cb.value] = true;
+    } else {
+      checkedCurveMods[cb.value] = cb.checked;
+    }
+    rebuildModList();
+    renderCurveChart();
+  }
+
+  function rebuildModList() {
+    modPanel.innerHTML = '';
+    var newChecked = {};
+
+    var procMods = curveProc === 'all'
+      ? procedures
+      : procedures.filter(function(p) { return p.procedure_id === parseInt(curveProc); });
+    procMods.forEach(function(p) {
+      var key = '__proc_' + p.procedure_id;
+      newChecked[key] = (checkedCurveMods[key] === true);
+      var label = document.createElement('label');
+      label.style.cssText = 'font-weight:700;color:var(--primary);border-bottom:1px solid #eee;';
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.value = key;
+      cb.checked = newChecked[key];
+      cb.addEventListener('change', function() { onCurveCheckChange(this); });
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode('📋 流程' + p.procedure_id + ' 总耗时'));
+      modPanel.appendChild(label);
+    });
+
+    if (procMods.length > 0) {
+      var sep = document.createElement('div');
+      sep.style.cssText = 'height:1px;background:#e0e0e0;margin:4px 12px;';
+      modPanel.appendChild(sep);
+    }
+
+    var mods = getProcModules(curveProc);
+    var seen = {};
+    mods.forEach(function(m) {
+      if (seen[m.module_name]) return;
+      seen[m.module_name] = true;
+      var key = m.module_name;
+      newChecked[key] = (checkedCurveMods[key] === true);
+      var label = document.createElement('label');
+      var cb = document.createElement('input');
+      cb.type = 'checkbox'; cb.value = key;
+      cb.checked = newChecked[key];
+      cb.addEventListener('change', function() { onCurveCheckChange(this); });
+      label.appendChild(cb);
+      label.appendChild(document.createTextNode(m.module_name + ' (P' + m.procedure_id + ')'));
+      modPanel.appendChild(label);
+    });
+    var hint = document.createElement('div');
+    hint.style.cssText = 'font-size:0.75em;color:var(--muted);padding:4px 14px;border-top:1px solid #eee;margin-top:4px;';
+    hint.textContent = '直接点击=单选 ｜ 按住Ctrl点击=多选';
+    modPanel.appendChild(hint);
+
+    checkedCurveMods = newChecked;
+    updateBtnText();
+  }
+
+  window.getCheckedCurveMods = function() {
+    return Object.keys(checkedCurveMods).filter(function(k) { return checkedCurveMods[k]; });
+  };
+
+  window._ctrlHeld = false;
+  document.addEventListener('keydown', function(e) { if (e.ctrlKey || e.metaKey) window._ctrlHeld = true; });
+  document.addEventListener('keyup', function(e) { if (!e.ctrlKey && !e.metaKey) window._ctrlHeld = false; });
+
+  modBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    modPanel.classList.toggle('show');
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!document.getElementById('curveModDropdown').contains(e.target)) {
+      modPanel.classList.remove('show');
+    }
+  });
+
+  procSel.addEventListener('change', function() {
+    curveProc = this.value;
+    rebuildModList();
+    renderCurveChart();
+  });
+
+  rebuildModList();
+
+  if (procedures.length > 0) {
+    var firstKey = '__proc_' + procedures[0].procedure_id;
+    checkedCurveMods[firstKey] = true;
+    rebuildModList();
+  }
+
+  renderAll();
+
+  setTimeout(function() {
+    var content = document.getElementById('section2Content');
+    var btn = document.getElementById('section2Toggle');
+    if (content && btn && content.style.display !== 'none') {
+      content.style.display = 'none';
+      btn.textContent = '📂 展开 ▾';
+    }
+  }, 200);
+})();
+
+// ---- 模块类型占比饼图：流程选择器 ----
+(function initPieModSelector() {
+  var sel = document.getElementById('pieModProcSelect');
+  procedures.forEach(function(p) {
+    var opt = document.createElement('option');
+    opt.value = p.procedure_id;
+    opt.textContent = '流程' + p.procedure_id;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', function() {
+    pieModProc = this.value;
+    renderPieModChart();
+  });
+})();
+
+// ---- 响应式 ----
+window.addEventListener('resize', function() {
+  procBarChart.resize();
+  barChart.resize();
+  pieProcChart.resize();
+  pieModChart.resize();
+  curveChart.resize();
+});
+
+// ---- 模块明细表流程筛选 ----
+(function initModuleProcFilter() {
+  var sel = document.getElementById('moduleProcSelect');
+  var info = document.getElementById('moduleProcInfo');
+  var table = document.getElementById('moduleDetailTable');
+  if (!sel || !table) return;
+
+  var procData = {};
+  procedures.forEach(function(p) {
+    procData[p.procedure_id] = {
+      module_count: p.module_count,
+      avg_ms: p.avg_ms,
+      proportion_pct: p.proportion_pct,
+      vci: p.vci,
+      volatility_impact: p.volatility_impact || ''
+    };
+  });
+
+  function updateInfo(pid) {
+    if (pid === 'all') {
+      var total = table.querySelectorAll('tbody tr').length;
+      info.textContent = '共 ' + total + ' 个模块（' + procedures.length + ' 个流程）';
+      return;
+    }
+    var pd = procData[parseInt(pid)];
+    if (pd) {
+      info.textContent = pd.module_count + '个模块 | 平均' + pd.avg_ms + 'ms | '
+        + '占比' + pd.proportion_pct + '% | VCI:' + (Math.round(pd.vci * 1000) / 10) + '% | '
+        + (pd.volatility_impact || '');
+    }
+  }
+
+  sel.addEventListener('change', function() {
+    var pid = this.value;
+    var rows = table.querySelectorAll('tbody tr');
+    rows.forEach(function(row) {
+      if (pid === 'all' || row.getAttribute('data-proc') === pid) {
+        row.style.display = '';
+      } else {
+        row.style.display = 'none';
+      }
+    });
+    updateInfo(pid);
+  });
+
+  updateInfo('all');
+  makeTableSortable('moduleDetailTable');
+})();
+
+// ═══════════ 流程明细 Tab 切换 ═══════════
+
+function initProcDetailView() {
+  var firstTab = document.querySelector('.proc-tab.active');
+  if (firstTab) {
+    updateViewSwitchBar(firstTab.dataset.proc);
+    updateProcDetailTable(firstTab.dataset.proc, 'avg');
+  }
+}
+setTimeout(initProcDetailView, 100);
+
+// ── 模块耗时明细表：折叠/展开 ──
+function toggleProcDetail(procId) {
+  var body = document.getElementById('procDetailBody-' + procId);
+  var arrow = document.getElementById('procDetailArrow-' + procId);
+  var info = document.getElementById('procDetailInfo-' + procId);
+  if (!body || !arrow) return;
+  if (body.style.display === 'none') {
+    body.style.display = '';
+    arrow.textContent = '▼';
+    if (info) info.textContent = info.textContent.replace('点击展开', '点击收起');
+  } else {
+    body.style.display = 'none';
+    arrow.textContent = '▶';
+    if (info) info.textContent = info.textContent.replace('点击收起', '点击展开');
+  }
+}
+
+// ── 获取指定流程当前选中的视图模式 ──
+function getCurrentViewMode(procId) {
+  var bar = document.getElementById('sharedViewSwitchBar');
+  if (!bar) return 'avg';
+  var activeBtn = bar.querySelector('.proc-view-btn.active');
+  if (activeBtn && activeBtn.dataset.proc === String(procId)) {
+    return activeBtn.dataset.mode;
+  }
+  return 'avg';
+}
+
+// ── 根据当前 Tab 动态生成共享视图切换按钮 ──
+function updateViewSwitchBar(procId) {
+  var bar = document.getElementById('sharedViewSwitchBar');
+  var dataScript = document.getElementById('procViewData');
+  if (!bar || !dataScript) return;
+
+  var allData = JSON.parse(dataScript.textContent);
+  var viewsMeta = allData.__views__;
+  if (!viewsMeta) return;
+
+  var views = viewsMeta[String(procId)] || [];
+  bar.dataset.proc = procId;
+
+  var existingBtns = bar.querySelectorAll('.proc-view-btn');
+  existingBtns.forEach(function(b) { b.remove(); });
+
+  views.forEach(function(view, i) {
+    var btn = document.createElement('button');
+    btn.className = 'switch-btn proc-view-btn' + (i === 0 ? ' active' : '');
+    btn.dataset.proc = procId;
+    btn.dataset.mode = view.mode;
+    btn.textContent = view.label;
+    bar.appendChild(btn);
+  });
+}
+
+// ── 模块耗时明细表：根据流程ID+视图模式更新表格内容 ──
+function updateProcDetailTable(procId, mode) {
+  var dataScript = document.getElementById('procViewData');
+  var table = document.getElementById('procDetailTable-' + procId);
+  var thead = document.getElementById('procDetailThead-' + procId);
+  var info = document.getElementById('procDetailInfo-' + procId);
+  if (!dataScript || !table || !thead) return;
+
+  var allData = JSON.parse(dataScript.textContent);
+  var mods = [];
+
+  if (mode === 'avg') {
+    var procData = allData[String(procId)];
+    mods = (procData && procData.avg) ? procData.avg : [];
+  } else {
+    var procData = allData[String(procId)];
+    if (procData) mods = procData[mode] || [];
+  }
+
+  var tbody = table.querySelector('tbody');
+  if (!tbody) { tbody = document.createElement('tbody'); table.appendChild(tbody); }
+  tbody.innerHTML = '';
+  thead.innerHTML = '';
+
+  if (mods.length === 0) {
+    thead.innerHTML = '<tr><th>模块耗时明细</th></tr>';
+    tbody.innerHTML = '<tr><td style="color:var(--muted);">该视图无模块数据</td></tr>';
+    if (info) info.textContent = '（无数据）';
+    return;
+  }
+
+  if (mode === 'avg') {
+    thead.innerHTML = '<tr>'
+      + '<th>模块ID</th><th>模块名称</th><th>平均耗时(ms)</th><th>最大耗时(ms)</th>'
+      + '<th>CV(%)</th><th>流程占比(%)</th><th>VCI(%)</th><th>波动影响</th>'
+      + '</tr>';
+    mods.forEach(function(m) {
+      var impClass = '';
+      if (m.volatility_impact && m.volatility_impact.indexOf('高') >= 0) impClass = 'vol-high';
+      else if (m.volatility_impact && m.volatility_impact.indexOf('中') >= 0) impClass = 'vol-mid';
+      var row = document.createElement('tr');
+      row.innerHTML =
+        '<td>' + m.module_id + '</td>' +
+        '<td>' + m.module_name + '</td>' +
+        '<td>' + m.time_ms + '</td>' +
+        '<td>' + (m.max_ms != null ? m.max_ms : '—') +
+        (m.max_timestamp ? '<br><span style="font-size:0.78em;color:var(--muted);">' + m.max_timestamp + '</span>' : '') + '</td>' +
+        '<td>' + (m.cv != null ? m.cv + '%' : '—') + '</td>' +
+        '<td>' + (m.proportion_pct != null ? m.proportion_pct + '%' : '—') + '</td>' +
+        '<td>' + (m.vci != null ? m.vci + '%' : '—') + '</td>' +
+        '<td class="' + impClass + '">' + (m.volatility_impact || '—') + '</td>';
+      tbody.appendChild(row);
+    });
+  } else {
+    thead.innerHTML = '<tr>'
+      + '<th>模块ID</th><th>模块名称</th><th>本次耗时(ms)</th><th>流程占比(%)</th>'
+      + '</tr>';
+    mods.forEach(function(m) {
+      var row = document.createElement('tr');
+      row.innerHTML =
+        '<td>' + m.module_id + '</td>' +
+        '<td>' + m.module_name + '</td>' +
+        '<td>' + m.time_ms + '</td>' +
+        '<td>' + (m.proportion_pct != null ? m.proportion_pct + '%' : '—') + '</td>';
+      tbody.appendChild(row);
+    });
+  }
+
+  if (info) {
+    var body = document.getElementById('procDetailBody-' + procId);
+    var expanded = body && body.style.display !== 'none';
+    var suffix = expanded ? '点击收起' : '点击展开';
+    if (mode === 'avg') {
+      info.textContent = mods.length + '个模块（当前流程 · 按平均耗时从大到小排序）' + suffix;
+    } else {
+      info.textContent = mods.length + '个模块（按耗时从大到小排序）' + suffix;
+    }
+  }
+
+  makeTableSortable('procDetailTable-' + procId);
+}
+
+// ── Tab 栏点击切换流程 ──
+(function initProcTabs() {
+  var tabBar = document.getElementById('procTabBar');
+  if (!tabBar) return;
+  tabBar.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('proc-tab')) return;
+    var btn = e.target;
+    var procId = btn.dataset.proc;
+
+    this.querySelectorAll('.proc-tab').forEach(function(b) {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+
+    document.querySelectorAll('.proc-detail-section').forEach(function(section) {
+      if (section.dataset.proc === procId) {
+        section.classList.remove('proc-detail-hidden');
+      } else {
+        section.classList.add('proc-detail-hidden');
+      }
+    });
+
+    updateViewSwitchBar(procId);
+    updateProcDetailTable(procId, 'avg');
+  });
+})();
+
+// ── 共享视图切换栏 ──
+(function initSharedViewSwitchBar() {
+  var bar = document.getElementById('sharedViewSwitchBar');
+  if (!bar) return;
+  bar.addEventListener('click', function(e) {
+    if (!e.target.classList.contains('proc-view-btn')) return;
+    var btn = e.target;
+    var procId = btn.dataset.proc;
+    var mode = btn.dataset.mode;
+
+    bar.querySelectorAll('.proc-view-btn').forEach(function(b) {
+      b.classList.remove('active');
+    });
+    btn.classList.add('active');
+
+    updateProcDetailTable(procId, mode);
+  });
+})();
+
+// ── 板块二「耗时分析图谱」折叠/展开 ──
+function toggleSection2() {
+  var content = document.getElementById('section2Content');
+  var btn = document.getElementById('section2Toggle');
+  if (!content || !btn) return;
+  if (content.style.display === 'none') {
+    content.style.display = '';
+    btn.textContent = '📂 收起 ▴';
+    procBarChart.resize();
+    barChart.resize();
+    pieProcChart.resize();
+    pieModChart.resize();
+    curveChart.resize();
+  } else {
+    content.style.display = 'none';
+    btn.textContent = '📂 展开 ▾';
+  }
+}
+</script>
+</body>
+</html>

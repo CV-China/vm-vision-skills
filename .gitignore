@@ -1,0 +1,15 @@
+.claude/
+.remember/
+.DS_Store
+Thumbs.db
+
+# Visual Studio
+.vs/
+*.db
+*.ipch
+*.sdf
+*.opendb
+*.VC.db
+obj/
+*.cache
+*.lref

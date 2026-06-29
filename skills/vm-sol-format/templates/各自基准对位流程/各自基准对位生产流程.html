@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>各自基准对位生产流程</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #fff; margin: 24px; }
+  h2 { color: #3A2B7C; margin: 0 0 16px 4px; font-weight: 600; }
+  .flow { position: relative; width: 740px; height: 760px; }
+  .node {
+    position: absolute; width: 140px; height: 28px; line-height: 28px;
+    background: #ECE9F7; border: 1.5px solid #6E5BC7; color: #3A2B7C;
+    border-radius: 8px; text-align: center; font-size: 14px; box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .node.large { width: 200px; } /* 为精定位节点增加宽度 */
+  .node.end { background: #4A3FB5; color: #fff; border-color: #4A3FB5; font-weight: 600; }
+  svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<h2>各自基准对位生产流程</h2>
+<div class="flow">
+  <svg width="740" height="760">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/>
+      </marker>
+    </defs>
+    <!-- LEFT col x_center=100 -->
+    <line x1="100" y1="58"  x2="100" y2="98"  stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="100" y1="128" x2="100" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="100" y1="198" x2="100" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <polyline points="100,198 100,220 260,220 260,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+    <line x1="100" y1="268" x2="100" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <polyline points="260,268 260,290 100,290 100,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/>
+    <line x1="100" y1="338" x2="100" y2="378" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="100" y1="408" x2="100" y2="448" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- RIGHT col x_center=460 -->
+    <line x1="460" y1="58"  x2="460" y2="98"  stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="460" y1="128" x2="460" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="460" y1="198" x2="460" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <polyline points="460,198 460,220 620,220 620,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+
+    <!-- 9 -> 34 long path -->
+    <polyline points="100,478 100,505 460,505 460,530" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+    <!-- 32 -> 34 -->
+    <line x1="460" y1="268" x2="460" y2="530" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- 33 -> 34 -->
+    <polyline points="620,268 620,290 460,290" stroke="#6E5BC7" stroke-width="1.5" fill="none"/>
+
+    <!-- 34 -> 49 -> 50 vertical -->
+    <line x1="460" y1="530" x2="460" y2="600" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="460" y1="600" x2="460" y2="670" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+  </svg>
+  <!-- Left column -->
+  <div class="node" style="left:30px;top:30px;">图像源(下相机)</div>
+  <div class="node" style="left:30px;top:100px;">轮廓匹配(粗定位)</div>
+  <div class="node" style="left:30px;top:170px;">位置修正</div>
+  <div class="node" style="left:30px;top:240px;">圆查找(精定位)</div>
+  <div class="node" style="left:205px;top:240px;">直线查找(角度查找)</div>
+  <div class="node" style="left:30px;top:310px;">单点纠偏</div>
+  <div class="node" style="left:30px;top:380px;">旋转计算</div>
+  <div class="node" style="left:30px;top:450px;">变量计算</div>
+  <!-- Right column -->
+  <div class="node" style="left:390px;top:30px;">图像源(上相机)</div>
+  <div class="node" style="left:390px;top:100px;">轮廓匹配(粗定位)</div>
+  <div class="node" style="left:390px;top:170px;">位置修正</div>
+  <div class="node" style="left:390px;top:240px;">圆查找(精定位)</div>
+  <div class="node" style="left:550px;top:240px;">直线查找(角度查找)</div>
+  <!-- Merge column -->
+  <div class="node" style="left:390px;top:530px;">单点抓取</div>
+  <div class="node" style="left:390px;top:600px;">格式化</div>
+  <div class="node end" style="left:390px;top:670px;">发送数据</div>
+</div>
+</body>
+</html>

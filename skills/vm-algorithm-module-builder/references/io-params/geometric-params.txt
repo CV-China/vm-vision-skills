@@ -1,0 +1,939 @@
+# 几何基本参数(point / line / rect / circle)完整参考
+
+> **适用场景**:用户需要输入/输出点(POINT)、直线(LINE)、矩形(RECT/ROIBOX)、圆/扇环(ROIANNULUS)等几何基本参数时。扇环和圆是同一种参数类型(ROIANNULUS)。
+
+⚠️ **重要**:VmModuleBase.h 中**没有** `VM_M_GetLine/SetLine/GetRect/SetRect/GetPoint/SetPoint` 接口!不要编造。
+几何基本参数在 VM 中的标准做法是:
+- **XML 端**:用 `Combination` 表达结构(ROIBOX / POINT / LINE / ROIANNULUS),内嵌 `Filter` 表达标量分量
+- **AlgorithmTab 端**:用 `ButtonSelecter` 控件为每个可配置的 Combination/Filter 提供 UI 绑定
+- **C++ 端**:用 `VM_M_GetFloat/SetFloat` + 索引逐分量读写(而非一条 API 取整个几何体)
+
+## ButtonSelecter 规律(AlgorithmTab.xml Tab_Basic Params)
+
+**公式**:每个 `<模块名>.xml` Input Category 中用户可配置的 Combination + 叶子 Filter,在 AlgorithmTab.xml 的 Tab_Basic Params 中各对应一个 `ButtonSelecter`。
+
+**两类 Operation**:
+
+| XML 元素类型 | DropOpenSetter OperationName | Trigger Setter OperationName | OperationParams |
+|---|---|---|---|
+| `<Combination Style="ROIBOX/POINT/LINE/ROIANNULUS">` | `GetFrontCombinationTreeOperation` | `SetCombinationSourceOperation` | XML 元素 Name 属性值 |
+| `<Filter ValueType="int/float/string">` | `GetFrontFilterTreeOperation` | `SetFilterSourceOperation` | XML 元素 Name 属性值 |
+
+**关键约束**:
+- ButtonSelecter **仅用于输入基本参数**;输出参数不在 AlgorithmTab.xml 中配置
+- Image 类型输入**不需要** ButtonSelecter(由 ImageSourceGroup 内置处理)
+- ROIBOX / POINT / LINE / ROIANNULUS 等嵌套 Combination 需要**递归展开**:父 Combination 1 个 ButtonSelecter,子 Combination 各 1 个,每个叶子 Filter 各 1 个
+- **CustomVisible 规则**:根 Combination 的 ButtonSelecter 必须设 `<CustomVisible>True</CustomVisible>`（否则基本参数界面不显示该参数入口）;子 Combination 和叶子 Filter 的 ButtonSelecter 设 `<CustomVisible>False</CustomVisible>`（子属性不需要顶层显示）
+
+============================================================================
+## 一、POINT(点)
+
+### 1.1 POINT 输入
+
+#### `<模块名>.xml` Input Category
+
+```xml
+<Combination Name="OriginPoint" Style="POINT" IsPrefer="true">
+    <Filters>
+        <Filter Name="OriginPointX" ValueType="float" IsForce="false"></Filter>
+        <Filter Name="OriginPointY" ValueType="float" IsForce="false"></Filter>
+    </Filters>
+</Combination>
+```
+
+**属性说明**:
+- `IsPrefer="true"`:标记为优先显示(可选)
+- `IsForce="false"`:可选连接
+- `IsForce="true"`:强制连接(上游必须提供)
+
+#### AlgorithmTab.xml Tab_Basic Params —— ButtonSelecter 链
+
+```xml
+<!-- 父 Combination: POINT -->
+<ButtonSelecter Name="OriginPoint">
+    <Description>Point</Description>
+    <DisplayName>Point</DisplayName>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>True</CustomVisible>
+    <CustomizedParamType>1</CustomizedParamType>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontCombinationTreeOperation</OperationName>
+        <OperationParams>POINT</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetCombinationSourceOperation</OperationName>
+                    <OperationParams>OriginPoint</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedCombinationOperation</OperationName>
+            <OperationParams>OriginPoint</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+
+<!-- 叶子 Filter: float X -->
+<ButtonSelecter Name="OriginPointX">
+    <Description>PointX</Description>
+    <DisplayName>PointX</DisplayName>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>False</CustomVisible>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontFilterTreeOperation</OperationName>
+        <OperationParams>float</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetFilterSourceOperation</OperationName>
+                    <OperationParams>OriginPointX</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedFilterOperation</OperationName>
+            <OperationParams>OriginPointX</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+
+<!-- 叶子 Filter: float Y(结构同上,X→Y) -->
+<ButtonSelecter Name="OriginPointY">
+    <Description>PointY</Description>
+    <DisplayName>PointY</DisplayName>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>False</CustomVisible>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontFilterTreeOperation</OperationName>
+        <OperationParams>float</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetFilterSourceOperation</OperationName>
+                    <OperationParams>OriginPointY</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedFilterOperation</OperationName>
+            <OperationParams>OriginPointY</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+```
+
+#### C++ 读取(单点输入)
+
+```cpp
+float fPointX = 0.0f, fPointY = 0.0f;
+int nCount = 0;
+int nRet = VM_M_GetFloat(hInput, "OriginPointX", 0, &fPointX, &nCount);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+nRet = VM_M_GetFloat(hInput, "OriginPointY", 0, &fPointY, &nCount);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+```
+
+#### C++ 读取(多点数组输入)
+
+```cpp
+HKA_U32 nPointCount = 0, nStatus = 0;
+int nRet = VmModule_GetInputVectorCount(hInput, "OriginPointX", &nPointCount, &nStatus);
+if (IMVS_EC_OK == nRet && nPointCount > 0)
+{
+    std::vector<HKA_POINT_F> points;
+    for (HKA_U32 i = 0; i < nPointCount; ++i)
+    {
+        float fX = 0.0f, fY = 0.0f;
+        int nCount = 0;
+        VM_M_GetFloat(hInput, "OriginPointX", i, &fX, &nCount);
+        VM_M_GetFloat(hInput, "OriginPointY", i, &fY, &nCount);
+        points.push_back({fX, fY});
+    }
+}
+```
+
+### 1.2 POINT 输出
+
+#### `<模块名>.xml` Output Category
+
+```xml
+<!-- 单点(写为 POINT Combination) -->
+<Combination Name="OutputPoint" Style="POINT" AccessMode="RW">
+    <Filters>
+        <Filter Name="OutputPointX" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+        <Filter Name="OutputPointY" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+    </Filters>
+</Combination>
+
+<!-- 点数组(写为 Filter IsArray) -->
+<Filter Name="OutPoints" ValueType="point" IsForce="true" isShow="true" AccessMode="RW" IsArray="true"/>
+```
+
+> ⚠️ **输出 POINT Combination 不在 AlgorithmTab.xml 中配置 ButtonSelecter**。输出参数仅配置 `<模块名>.xml` Output Category + Display.xml。
+
+#### C++ 写输出(单点)
+
+```cpp
+// 逐分量写入
+nRet = VM_M_SetFloat(hOutput, "OutputPointX", 0, fResultX);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+nRet = VM_M_SetFloat(hOutput, "OutputPointY", 0, fResultY);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+```
+
+#### C++ 写输出(点数组)
+
+点数组**必须**用 `VM_M_SetFloat` 逐分量写入。
+
+```cpp
+for (int i = 0; i < nPointCount; i++)
+{
+    VM_M_SetFloat(hOutput, "OutputPointX", i, vctPoints[i].fX);
+    VM_M_SetFloat(hOutput, "OutputPointY", i, vctPoints[i].fY);
+}
+```
+
+============================================================================
+## 二、LINE(直线)
+
+### 2.1 LINE 输入
+
+LINE 由起点(StartPoint)和终点(EndPoint)两个 POINT 组合而成。
+
+#### `<模块名>.xml` Input Category
+
+```xml
+<Combination Name="Input Line 1" Style="LINE">
+    <Filters>
+        <Combination Name="Line1StartPoint" Style="POINT">
+            <Filters>
+                <Filter Name="Line1PointStartX" ValueType="float" IsForce="false"></Filter>
+                <Filter Name="Line1PointStartY" ValueType="float" IsForce="false"></Filter>
+            </Filters>
+        </Combination>
+        <Combination Name="Line1EndPoint" Style="POINT">
+            <Filters>
+                <Filter Name="Line1PointEndX" ValueType="float" IsForce="false"></Filter>
+                <Filter Name="Line1PointEndY" ValueType="float" IsForce="false"></Filter>
+            </Filters>
+        </Combination>
+    </Filters>
+</Combination>
+```
+
+#### AlgorithmTab.xml Tab_Basic Params —— ButtonSelecter 链
+
+LINE 的 ButtonSelecter 层级最完整,展示了"根 Combination → 子 Combination → 叶子 Filter"的全递归展开:
+
+```xml
+<!-- 第 1 层: LINE Combination -->
+<ButtonSelecter Name="LINE">
+    <Description>select Line</Description>
+    <DisplayName>select Line</DisplayName>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>True</CustomVisible>
+    <CustomizedParamType>1</CustomizedParamType>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontCombinationTreeOperation</OperationName>
+        <OperationParams>LINE</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetCombinationSourceOperation</OperationName>
+                    <OperationParams>Input Line 1</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedCombinationOperation</OperationName>
+            <OperationParams>Input Line 1</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+
+<!-- 第 2 层: StartPoint POINT Combination -->
+<ButtonSelecter Name="StartPoint">
+    <Description>Startpoint</Description>
+    <DisplayName>Startpoint</DisplayName>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>False</CustomVisible>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontCombinationTreeOperation</OperationName>
+        <OperationParams>POINT</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetCombinationSourceOperation</OperationName>
+                    <OperationParams>Line1StartPoint</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedCombinationOperation</OperationName>
+            <OperationParams>Line1StartPoint</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+
+<!-- 第 2 层: EndPoint POINT Combination -->
+<ButtonSelecter Name="EndPoint">
+    <Description>Endpoint</Description>
+    <DisplayName>Endpoint</DisplayName>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>False</CustomVisible>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontCombinationTreeOperation</OperationName>
+        <OperationParams>POINT</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetCombinationSourceOperation</OperationName>
+                    <OperationParams>Line1EndPoint</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedCombinationOperation</OperationName>
+            <OperationParams>Line1EndPoint</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+
+<!-- 第 3 层: 叶子 Filter × 4(StartX / StartY / EndX / EndY) -->
+<ButtonSelecter Name="StartPointX">
+    <Description>Startpoint X Coordinate</Description>
+    <DisplayName>Startpoint X Coordinate</DisplayName>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>False</CustomVisible>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontFilterTreeOperation</OperationName>
+        <OperationParams>float</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetFilterSourceOperation</OperationName>
+                    <OperationParams>Line1PointStartX</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedFilterOperation</OperationName>
+            <OperationParams>Line1PointStartX</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+
+<!-- StartPointY / EndPointX / EndPointY 结构同上,仅 Name / OperationParams 对应到各自的 Filter Name -->
+```
+
+#### C++ 读取(单线输入)
+
+```cpp
+float fStartX = 0.0f, fStartY = 0.0f, fEndX = 0.0f, fEndY = 0.0f;
+int nCount = 0;
+int nRet = IMVS_EC_OK;
+
+nRet = VM_M_GetFloat(hInput, "Line1PointStartX", 0, &fStartX, &nCount);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+nRet = VM_M_GetFloat(hInput, "Line1PointStartY", 0, &fStartY, &nCount);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+nRet = VM_M_GetFloat(hInput, "Line1PointEndX", 0, &fEndX, &nCount);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+nRet = VM_M_GetFloat(hInput, "Line1PointEndY", 0, &fEndY, &nCount);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+```
+
+### 2.2 LINE 输出
+
+#### `<模块名>.xml` Output Category
+
+```xml
+<!-- 单线(写为 LINE Combination) -->
+<Combination Name="OutputLine" Style="LINE" AccessMode="RW">
+    <Filters>
+        <Combination Name="OutputLineStartPoint" Style="POINT" AccessMode="RW">
+            <Filters>
+                <Filter Name="OutputLineStartX" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+                <Filter Name="OutputLineStartY" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+            </Filters>
+        </Combination>
+        <Combination Name="OutputLineEndPoint" Style="POINT" AccessMode="RW">
+            <Filters>
+                <Filter Name="OutputLineEndX" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+                <Filter Name="OutputLineEndY" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+            </Filters>
+        </Combination>
+    </Filters>
+</Combination>
+
+<!-- 线数组(写为 Filter IsArray,上层算法用 PointSet/点对表达) -->
+<Filter Name="OutLines" ValueType="line" IsForce="true" isShow="true" AccessMode="RW" IsArray="true"/>
+```
+
+#### C++ 写输出(单线)
+
+```cpp
+nRet = VM_M_SetFloat(hOutput, "OutputLineStartX", 0, fStartX);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+nRet = VM_M_SetFloat(hOutput, "OutputLineStartY", 0, fStartY);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+nRet = VM_M_SetFloat(hOutput, "OutputLineEndX", 0, fEndX);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+nRet = VM_M_SetFloat(hOutput, "OutputLineEndY", 0, fEndY);
+HKA_MODU_CHECK_ERROR(IMVS_EC_OK != nRet, nRet);
+```
+
+============================================================================
+## 三、RECT / ROIBOX(矩形)
+
+> 详细的 ROIBOX 专题(含 C++ GetBatchBoxByName / SetBatchBoxByName 辅助函数)见 [rect-params.md](rect-params.md)。
+
+### 3.1 RECT 输入
+
+#### `<模块名>.xml` Input Category
+
+矩形有两种配置模式:
+
+**模式 A:只读数组输入**(上游驱动,用户不可编辑)
+```xml
+<Combination Name="DetectRect" Style="ROIBOX">
+    <Filters>
+        <Combination Name="DetectRectCenterPoint" Style="POINT">
+            <Filters>
+                <Filter Name="DetectRectCenterX" ValueType="float" IsForce="true"></Filter>
+                <Filter Name="DetectRectCenterY" ValueType="float" IsForce="true"></Filter>
+            </Filters>
+        </Combination>
+        <Filter Name="DetectRectWidth" ValueType="float" IsForce="true"></Filter>
+        <Filter Name="DetectRectHeight" ValueType="float" IsForce="true"></Filter>
+        <Filter Name="DetectRectAngle" ValueType="float" IsForce="true"></Filter>
+    </Filters>
+</Combination>
+```
+- `IsForce="true"`:上游必须连接
+- 无 `AccessMode` / `isShow` 属性:不可交互编辑
+
+**模式 B:可编辑单输入**(用户可在图像上拖动调整)
+```xml
+<Combination Name="BlockRect" Style="ROIBOX" AccessMode="RW">
+    <Filters>
+        <Combination Name="BlockRectCenterPoint" Style="POINT" AccessMode="RW">
+            <Filters>
+                <Filter Name="BlockRectCenterX" ValueType="float" IsForce="false" isShow="true" AccessMode="RW"/>
+                <Filter Name="BlockRectCenterY" ValueType="float" IsForce="false" isShow="true" AccessMode="RW"/>
+            </Filters>
+        </Combination>
+        <Filter Name="BlockRectWidth" ValueType="float" IsForce="false" isShow="true" AccessMode="RW"/>
+        <Filter Name="BlockRectHeight" ValueType="float" IsForce="false" isShow="true" AccessMode="RW"/>
+        <Filter Name="BlockRectAngle" ValueType="float" IsForce="false" isShow="true" AccessMode="RW"/>
+    </Filters>
+</Combination>
+```
+- `AccessMode="RW"` + `IsForce="false"`:可交互编辑
+- `isShow="true"`:端口图可见
+
+#### AlgorithmTab.xml Tab_Basic Params
+
+```xml
+<!-- ROIBOX 用 GetFrontCombinationTreeOperation -->
+<ButtonSelecter Name="DetectRect">
+    <Description>建模区域</Description>
+    <DisplayName>建模区域</DisplayName>
+    <Visibility>Beginner</Visibility>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>True</CustomVisible>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontCombinationTreeOperation</OperationName>
+        <OperationParams>ROIBOX</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetCombinationSourceOperation</OperationName>
+                    <OperationParams>DetectRect</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedCombinationOperation</OperationName>
+            <OperationParams>DetectRect</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+<!-- CenterPoint 子 Combination 同 POINT 模式,Width/Height/Angle 叶子 Filter 同 float 模式 -->
+```
+
+**注意**:ROIBOX 嵌套层级为 `ROIBOX → POINT(CenterPoint) → float×2 + float×3`,共需 1 + 1 + 5 = 7 个 ButtonSelecter。具体展开规则见 [rect-params.md](rect-params.md)。
+
+#### C++ 读取(单矩形)
+
+```cpp
+// 逐分量读取(与 POINT 同理,多加 Width/Height/Angle)
+RoiBox box = {0};
+int nCount = 0;
+
+VM_M_GetFloat(hInput, "BlockRectCenterX", 0, &box.fCenterX, &nCount);
+VM_M_GetFloat(hInput, "BlockRectCenterY", 0, &box.fCenterY, &nCount);
+VM_M_GetFloat(hInput, "BlockRectWidth",   0, &box.fWidth,   &nCount);
+VM_M_GetFloat(hInput, "BlockRectHeight",  0, &box.fHeight,  &nCount);
+VM_M_GetFloat(hInput, "BlockRectAngle",   0, &box.fAngle,   &nCount);
+```
+
+#### C++ 读取(矩形数组)
+
+详见 [rect-params.md §GetBatchBoxByName](rect-params.md)。核心模式:
+```cpp
+// 1. 获取数组长度
+HKA_U32 nBoxArrayCount = 0, status = 0;
+VmModule_GetInputVectorCount(hInput, "DetectRectCenterX", &nBoxArrayCount, &status);
+
+// 2. 逐元素逐分量读取
+for (HKA_U32 i = 0; i < nBoxArrayCount; ++i)
+{
+    VM_M_GetFloat(hInput, "DetectRectCenterX", i, &box.fCenterX, &nCount);
+    VM_M_GetFloat(hInput, "DetectRectCenterY", i, &box.fCenterY, &nCount);
+    // ... Width / Height / Angle 同理
+}
+```
+
+### 3.2 RECT 输出
+
+#### `<模块名>.xml` Output Category
+
+```xml
+<!-- 输出矩形数组(ROIBOX Combination) -->
+<Combination Name="PatMatchRect" Style="ROIBOX">
+    <Filters>
+        <Combination Name="PatMatchRectCenterPoint" Style="POINT">
+            <Filters>
+                <Filter Name="PatMatchRectCenterX" ValueType="float" IsForce="true"></Filter>
+                <Filter Name="PatMatchRectCenterY" ValueType="float" IsForce="true"></Filter>
+            </Filters>
+        </Combination>
+        <Filter Name="PatMatchRectWidth" ValueType="float" IsForce="true"></Filter>
+        <Filter Name="PatMatchRectHeight" ValueType="float" IsForce="true"></Filter>
+        <Filter Name="PatMatchRectAngle" ValueType="float" IsForce="true"></Filter>
+    </Filters>
+</Combination>
+
+<!-- 简化写法:Filter IsArray(适用简单场景) -->
+<Filter Name="OutRect" ValueType="rect" IsForce="true" isShow="true" AccessMode="RW" IsArray="true"/>
+```
+
+#### C++ 写输出(矩形数组)
+
+矩形输出**必须**用 `VM_M_SetFloat` 逐分量写入,不需要使用其他接口。
+
+```cpp
+for (int i = 0; i < (int)boxes.size(); i++)
+{
+    VM_M_SetFloat(hOutput, "PatMatchRectCenterX", i, boxes[i].fCenterX);
+    VM_M_SetFloat(hOutput, "PatMatchRectCenterY", i, boxes[i].fCenterY);
+    VM_M_SetFloat(hOutput, "PatMatchRectWidth",   i, boxes[i].fWidth);
+    VM_M_SetFloat(hOutput, "PatMatchRectHeight",  i, boxes[i].fHeight);
+    VM_M_SetFloat(hOutput, "PatMatchRectAngle",   i, boxes[i].fAngle);
+}
+```
+
+============================================================================
+## 四、CIRCLE / ROIANNULUS(圆/扇环)
+
+圆/扇环由圆心(POINT) + 内径/半径/起始角度/角度范围组成。扇环和圆是同一种参数类型(ROIANNULUS)。
+
+### 4.1 圆/扇环 输入
+
+#### `<模块名>.xml` Input Category
+
+```xml
+<Combination Name="Input Circle" Style="ROIANNULUS">
+    <Filters>
+        <Combination Name="InputCenterPoint" Style="POINT">
+            <Filters>
+                <Filter Name="InputCircleCenterX" ValueType="float" IsForce="false"></Filter>
+                <Filter Name="InputCircleCenterY" ValueType="float" IsForce="false"></Filter>
+            </Filters>
+        </Combination>
+        <Filter Name="InputCircleInnerRadius" ValueType="float" IsForce="false"></Filter>
+        <Filter Name="CircleRadius" ValueType="float" IsForce="false"></Filter>
+        <Filter Name="InputCircleStartAngle" ValueType="float" IsForce="false"></Filter>
+        <Filter Name="InputCircleAngleExtend" ValueType="float" IsForce="false"></Filter>
+    </Filters>
+</Combination>
+```
+
+**结构**: `ROIANNULUS` → 1 个 `POINT` (CenterPoint) + 4 个 float Filter (InnerRadius / Radius / StartAngle / AngleExtend)
+**叶子 Filter 数量**: 2 (CenterX/Y) + 4 = **6 个 float**
+
+**参数约束**:
+- StartAngle: 范围 `(-180, 180]` 度
+- AngleExtend: 范围 `(0, 360]` 度
+
+#### AlgorithmTab.xml Tab_Basic Params —— ButtonSelecter 链
+
+ROIANNULUS 的 ButtonSelecter 完整展开 = 1 (根) + 1 (CenterPoint) + 6 (叶子) = **8 个**:
+
+```xml
+<!-- 根 Combination: ROIANNULUS -->
+<ButtonSelecter Name="Circle">
+    <Description>Circle</Description>
+    <DisplayName>Circle</DisplayName>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>True</CustomVisible>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontCombinationTreeOperation</OperationName>
+        <OperationParams>ROIANNULUS</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetCombinationSourceOperation</OperationName>
+                    <OperationParams>Input Circle</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedCombinationOperation</OperationName>
+            <OperationParams>Input Circle</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+
+<!-- CenterPoint 子 Combination: POINT(X 和 Y 各一个) -->
+<ButtonSelecter Name="CenterPointX">
+    <Description>Circle Center X</Description>
+    <DisplayName>Circle Center X</DisplayName>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>False</CustomVisible>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontFilterTreeOperation</OperationName>
+        <OperationParams>float</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetFilterSourceOperation</OperationName>
+                    <OperationParams>InputCircleCenterX</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedFilterOperation</OperationName>
+            <OperationParams>InputCircleCenterX</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+<!-- CenterPointY 结构同上, OperationParams = InputCircleCenterY -->
+
+<!-- 半径(叶子 Filter) -->
+<ButtonSelecter Name="Radius">
+    <Description>radius</Description>
+    <DisplayName>radius</DisplayName>
+    <AccessMode>O</AccessMode>
+    <CustomVisible>False</CustomVisible>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontFilterTreeOperation</OperationName>
+        <OperationParams>float</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetFilterSourceOperation</OperationName>
+                    <OperationParams>CircleRadius</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedFilterOperation</OperationName>
+            <OperationParams>CircleRadius</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+<!-- InnerRadius / StartAngle / AngleExtend 结构同上, OperationParams 对应各自的 Filter Name -->
+```
+
+#### C++ 读取(单圆/扇环输入)
+
+```cpp
+float fCenterX = 0.0f, fCenterY = 0.0f;
+float fInnerRadius = 0.0f, fRadius = 0.0f;
+float fStartAngle = 0.0f, fAngleExtend = 0.0f;
+int nCount = 0;
+
+VM_M_GetFloat(hInput, "InputCircleCenterX",   0, &fCenterX,     &nCount);
+VM_M_GetFloat(hInput, "InputCircleCenterY",   0, &fCenterY,     &nCount);
+VM_M_GetFloat(hInput, "InputCircleInnerRadius", 0, &fInnerRadius, &nCount);
+VM_M_GetFloat(hInput, "CircleRadius",         0, &fRadius,      &nCount);
+VM_M_GetFloat(hInput, "InputCircleStartAngle", 0, &fStartAngle,  &nCount);
+VM_M_GetFloat(hInput, "InputCircleAngleExtend",0, &fAngleExtend, &nCount);
+
+// 校验范围
+if (fStartAngle <= -180.0f || fStartAngle > 180.0f)
+{
+    MLOG_ERROR(m_nModuleId, "StartAngle out of range: %f", fStartAngle);
+    return IMVS_EC_PARAM;
+}
+if (fAngleExtend <= 0.0f || fAngleExtend > 360.0f)
+{
+    MLOG_ERROR(m_nModuleId, "AngleExtend out of range: %f", fAngleExtend);
+    return IMVS_EC_PARAM;
+}
+```
+
+### 4.2 圆/扇环 输出
+
+#### `<模块名>.xml` Output Category
+
+```xml
+<Combination Name="OutputCircle" Style="ROIANNULUS">
+    <Filters>
+        <Combination Name="OutputCircleCenterPoint" Style="POINT">
+            <Filters>
+                <Filter Name="OutputCircleCenterX" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+                <Filter Name="OutputCircleCenterY" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+            </Filters>
+        </Combination>
+        <Filter Name="OutputCircleInnerRadius" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+        <Filter Name="OutputCircleRadius" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+        <Filter Name="OutputCircleStartAngle" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+        <Filter Name="OutputCircleAngleExtend" ValueType="float" IsForce="true" isShow="true" AccessMode="RW"/>
+    </Filters>
+</Combination>
+```
+
+#### C++ 写输出
+
+```cpp
+VM_M_SetFloat(hOutput, "OutputCircleCenterX",   0, fCenterX);
+VM_M_SetFloat(hOutput, "OutputCircleCenterY",   0, fCenterY);
+VM_M_SetFloat(hOutput, "OutputCircleInnerRadius", 0, fInnerRadius);
+VM_M_SetFloat(hOutput, "OutputCircleRadius",    0, fRadius);
+VM_M_SetFloat(hOutput, "OutputCircleStartAngle",0, fStartAngle);
+VM_M_SetFloat(hOutput, "OutputCircleAngleExtend",0, fAngleExtend);
+```
+
+============================================================================
+## 五、简单标量(ButtonSelecter Filter 模式)
+
+用户提供的示例中,int/string 类型的输入基本参数也用 ButtonSelecter:
+
+### `<模块名>.xml` Input Category
+
+```xml
+<Filter Name="RefreshSignal" ValueType="int" IsForce="false" AutoSubscribe="false"></Filter>
+```
+
+### AlgorithmTab.xml Tab_Basic Params
+
+```xml
+<!-- 标量类型用 GetFrontFilterTreeOperation -->
+<ButtonSelecter Name="RefreshSignal">
+    <Description>Refresh Signal</Description>
+    <DisplayName>Refresh Signal</DisplayName>
+    <AccessMode>O</AccessMode>
+    <DropOpenSetter>
+        <TargetName>EnumEntrys</TargetName>
+        <OperationName>GetFrontFilterTreeOperation</OperationName>
+        <OperationParams>int</OperationParams>
+    </DropOpenSetter>
+    <Triggers>
+        <Trigger>
+            <Property>CurValue</Property>
+            <Setters>
+                <Setter>
+                    <OperationName>SetFilterSourceOperation</OperationName>
+                    <OperationParams>RefreshSignal</OperationParams>
+                </Setter>
+            </Setters>
+        </Trigger>
+    </Triggers>
+    <Initers>
+        <Setter>
+            <TargetName>CurValue</TargetName>
+            <OperationName>GetSelectedFilterOperation</OperationName>
+            <OperationParams>RefreshSignal</OperationParams>
+        </Setter>
+    </Initers>
+</ButtonSelecter>
+```
+
+**规律**:标量 Filter 与几何叶子 Filter 的 ButtonSelecter 结构完全一致,仅 `OperationParams` 写 `int`/`float`/`string`。
+
+============================================================================
+## 六、Display.xml 渲染(FOR POINT / LINE / RECT / CIRCLE)
+
+输出几何参数如需在预览窗口渲染,需在 Display.xml 中追加对应 Object。
+
+> ⚠️ **Feature `Name` 是固定值**,不可自定义；**Feature `Mapping`** 引用 `<模块名>.xml` 中对应 Filter Name。
+
+```xml
+<!-- 矩形 -->
+<Object Name="Box Result" Type="rect" okcolor="#66ff00" ngcolor="#ff0000"
+        hotcolor="#66ff00" opacity="1" linetype="1" linewidth="2"
+        IsDisplay="true" highLightEnable="false">
+    <Features>
+        <Feature Name="CenterX" Mapping="ListBoxCenterX" Value="0" />
+        <Feature Name="CenterY" Mapping="ListBoxCenterY" Value="0" />
+        <Feature Name="Width"   Mapping="ListBoxWidth"   Value="0" />
+        <Feature Name="Height"  Mapping="ListBoxHeight"  Value="0" />
+        <Feature Name="Angle"   Mapping="ListBoxAngle"   Value="0" />
+        <Feature Name="Tips"    Mapping="ListBoxCenterX,ListBoxCenterY,ListBoxWidth,ListBoxHeight,ListBoxAngle"
+                Value="CenterX:{0},CenterY:{1} Width:{2} Height:{3} Angle:{4}" />
+        <Feature Name="Status"  Mapping="ModuStatus" Value="1" />
+    </Features>
+</Object>
+
+<!-- 圆/扇环 -->
+<Object Name="Circle Result" Type="circle" okcolor="#66ff00" ngcolor="#ff0000"
+        hotcolor="#66ff00" opacity="1" linetype="1" linewidth="1" IsDisplay="true">
+    <Features>
+        <Feature Name="CenterX"     Mapping="ListCircleCenterX" Value="0" />
+        <Feature Name="CenterY"     Mapping="ListCircleCenterY" Value="0" />
+        <Feature Name="MajorRadius" Mapping="ListRadius"        Value="0" />
+        <Feature Name="MinorRadius" Mapping="ListRadius"        Value="0" />
+        <Feature Name="Tips"        Mapping="ListCircleCenterX,ListCircleCenterY,ListRadius"
+                Value="CircleSite:Center({0},{1}) Radius={2}" />
+        <Feature Name="Status"      Mapping="ModuStatus" Value="0" />
+    </Features>
+</Object>
+
+<!-- 直线 -->
+<Object Name="Line Result" Type="line" okcolor="#66ff00" ngcolor="#ff0000"
+        hotcolor="#66ff00" opacity="1" linetype="1" linewidth="2"
+        IsDisplay="true" NeedLabel="false" arrowsize="10">
+    <Features>
+        <Feature Name="StartLineX" Mapping="ListStartX" Value="0" />
+        <Feature Name="StartLineY" Mapping="ListStartY" Value="0" />
+        <Feature Name="EndLineX"   Mapping="ListEndX"   Value="0" />
+        <Feature Name="EndLineY"   Mapping="ListEndY"   Value="0" />
+        <Feature Name="Tips"       Mapping="ListStartX,ListStartY,ListEndX,ListEndY"
+                Value="LineSite:StartPoint({0},{1}) EndPoint({2},{3})" />
+        <Feature Name="Status"     Mapping="ModuStatus" Value="0" />
+    </Features>
+</Object>
+
+<!-- 点(数组) -->
+<Object Name="Contour Point Result" Type="point" okcolor="#66ff00" ngcolor="#ff0000"
+        hotcolor="#66ff00" opacity="1" linetype="1" linewidth="1" IsDisplay="true">
+    <Features>
+        <Feature Name="CenterX" Mapping="ListPointX" Value="0" ArrayMatch="true" />
+        <Feature Name="CenterY" Mapping="ListPointY" Value="0" ArrayMatch="true" />
+        <Feature Name="Tips"    Mapping="ListPointX,ListPointY"
+                Value="CountourPoint:({0},{1}) " ArrayMatch="true" />
+        <Feature Name="Status"  Mapping="ModuStatus" Value="0" />
+    </Features>
+</Object>
+```
+
+**约束**:
+- Feature **`Name` 是固定值**,不可自定义（如 line 的 Feature Name 固定为 `StartLineX`,不是 `StartX`）
+- Feature **`Mapping`** 必须与 `<模块名>.xml` Output Category 中 Filter Name 完全一致
+- `Type` 全小写(`rect` / `circle` / `line` / `point` / `image` / `datarecord` / `datalist`)
+- 所有几何类型必须含 `Tips` Feature（`Mapping` 为逗号拼接的 Filter Name,`Value` 为格式化串 `{0}`~`{N}`）
+- `Status`: `Mapping="ModuStatus"`（结果有效时才渲染）或 `Mapping="NULL" Value="1"`（始终渲染）
+- 点数组用 `ArrayMatch="true"`,矩形/圆/直线不支持 ArrayMatch
+
+============================================================================
+## 七、禁止接口清单
+
+几何参数**只能**用 `VM_M_GetFloat/VM_M_SetFloat` 逐分量读写。以下接口**禁止使用**:
+
+| ❌ 禁止 | 类别 | ✅ 正确替代 |
+|---|---|---|
+| `VM_M_GetLine` / `VM_M_SetLine` | 编造（不存在） | `VM_M_GetFloat/VM_M_SetFloat` 逐分量(StartLineX/StartLineY/EndLineX/EndLineY × 4) |
+| `VM_M_GetRect` / `VM_M_SetRect` | 编造（不存在） | `VM_M_GetFloat/VM_M_SetFloat` 逐分量(CenterX/CenterY/Width/Height/Angle × 5) |
+| `VM_M_GetPoint` / `VM_M_SetPoint` | 编造（不存在） | `VM_M_GetFloat/VM_M_SetFloat` 逐分量(CenterX/CenterY × 2) |
+| `VM_M_GetCircle` / `VM_M_SetCircle` | 编造（不存在） | `VM_M_GetFloat/VM_M_SetFloat` 逐分量(CenterX/CenterY/InnerRadius/Radius/StartAngle/AngleExtend × 6) |
+| `VmModule_GetInputRoiBox` | SDK 复合接口 | `VM_M_GetFloat` 逐分量 |
+| `VmModule_OutputVector_BoxF` | SDK 复合接口 | `VM_M_SetFloat` 逐分量 |
+| `VmModule_OutputVector_PointF` | SDK 复合接口 | `VM_M_SetFloat` 逐分量 |
+
+============================================================================
+## 八、落盘自检
+
+```bash
+# 1. 几何参数的 XML Filter Name 必须与 cpp 中 VM_M_Get*/Set* 的 szName 一致
+grep -oE 'Name="[a-zA-Z][a-zA-Z0-9]*"' <模块名>.xml | sort -u
+grep -oE 'VM_M_GetFloat\(hInput, "[^"]+"' AlgorithmModule.cpp | sort -u
+grep -oE 'VM_M_SetFloat\(hOutput, "[^"]+"' AlgorithmModule.cpp | sort -u
+# 三组集合中Input的Filter名应出现在cpp的GetFloat中，Output的Filter名应出现在SetFloat中
+
+# 2. AlgorithmTab.xml 中 ButtonSelecter 的 SetFilterSourceOperation / SetCombinationSourceOperation 的 OperationParams
+#    必须与 <模块名>.xml Input Category 中的 Filter / Combination Name 一致
+grep -oE '<OperationParams>[^<]+</OperationParams>' <模块名>AlgorithmTab.xml \
+    | grep -vE '(int|float|string|ROIBOX|POINT|LINE|ROIANNULUS)' | sort -u
+grep -oE 'Name="[a-zA-Z][a-zA-Z0-9]*"' <模块名>.xml | sort -u
+```

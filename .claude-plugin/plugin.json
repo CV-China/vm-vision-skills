@@ -1,0 +1,18 @@
+{
+  "name": "vm-vision-skills",
+  "description": "VisionMaster 机器视觉全能工具包：包含 VM 方案脚本编程、算法模块构建，以及两大总控台——2D 视觉定位引导（联动方案格式化、方案结构解析）和全方位性能优化（下辖耗时分析、脚本防护优化、VTune CPU 分析、PerfView 内存分析四个子技能），共 10 大技能。海康机器人 VisionMaster 用户的瑞士军刀。",
+  "author": {
+    "name": "CV-China",
+    "email": ""
+  },
+  "homepage": "https://github.com/CV-China/vm-vision-skills",
+  "keywords": [
+    "visionmaster",
+    "machine-vision",
+    "海康机器人",
+    "VM",
+    "2d-vision",
+    "vtune",
+    "性能优化"
+  ]
+}

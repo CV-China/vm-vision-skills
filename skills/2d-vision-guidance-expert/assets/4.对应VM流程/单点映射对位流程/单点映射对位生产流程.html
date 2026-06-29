@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>单点映射对位生产流程</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #fff; margin: 24px; }
+  h2 { color: #3A2B7C; margin: 0 0 16px 4px; font-weight: 600; }
+  .flow { position: relative; width: 720px; height: 640px; }
+  .node {
+    position: absolute; width: 140px; height: 28px; line-height: 28px;
+    background: #ECE9F7; border: 1.5px solid #6E5BC7; color: #3A2B7C;
+    border-radius: 8px; text-align: center; font-size: 14px; box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .node.large { width: 200px; }
+  .node.end { background: #4A3FB5; color: #fff; border-color: #4A3FB5; font-weight: 600; }
+  svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<h2>单点映射对位生产流程</h2>
+<div class="flow">
+  <svg width="720" height="640">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/>
+      </marker>
+    </defs>
+    
+    <!-- LEFT: 下相机流程 -->
+    <!-- 下相机拍照 -> 粗定位 -->
+    <line x1="100" y1="58" x2="100" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- 粗定位 -> 位置修正 -->
+    <line x1="100" y1="128" x2="100" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- 位置修正 -> 精定位 -->
+    <line x1="100" y1="198" x2="100" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- 粗定位 -> 角度确定 (分支到角度确定节点) -->
+    <polyline points="100,200 100,220 300,220 300,240" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+    <!-- 角度确定 -> 精定位 (从角度确定合并回精定位) -->
+    <polyline points="300,240 300,280 100,280 100,290" stroke="#6E5BC7" stroke-width="1.5" fill="none"/>
+
+    <!-- RIGHT: 上相机流程 -->
+    <!-- 上相机拍照 -> 粗定位 -->
+    <line x1="450" y1="58" x2="450" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- 粗定位 -> 位置修正 -->
+    <line x1="450" y1="128" x2="450" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <!-- 位置修正 -> 精定位 -->
+    <line x1="450" y1="198" x2="450" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+
+    <!-- 粗定位 -> 角度确定 (分支到角度确定节点) -->
+    <polyline points="450,220 450,220 650,220 650,240" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+    <!-- 角度确定 -> 精定位 (从角度确定合并回精定位) -->
+    <polyline points="650,260 650,280 450,280 450,300" stroke="#6E5BC7" stroke-width="1.5" fill="none"/>
+
+    <!-- 结果汇总 -> 单点映射对位 -->
+    <polyline points="100,260 100,310 450,310 450,408" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+    <line x1="450" y1="250" x2="450" y2="340" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- 单点映射对位 -> 格式化 -> 结果发送 -->
+    <line x1="450" y1="380" x2="450" y2="400" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="450" y1="420" x2="450" y2="470" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+  </svg>
+  
+  <!-- Left column -->
+  <div class="node" style="left:30px;top:30px;">图像源(下相机)</div>
+  <div class="node" style="left:30px;top:100px;">轮廓匹配(粗定位)</div>
+  <div class="node" style="left:30px;top:170px;">位置修正</div>
+  <div class="node" style="left:30px;top:240px;">圆查找(精定位)</div>
+  <div class="node" style="left:220px;top:240px;">直线查找(角度查找)</div>
+
+  
+  <!-- Right column -->
+  <div class="node" style="left:380px;top:30px;">图像源(上相机)</div>
+  <div class="node" style="left:380px;top:100px;">轮廓匹配(粗定位)</div>
+  <div class="node" style="left:380px;top:170px;">位置修正</div>
+  <div class="node" style="left:380px;top:240px;">圆查找(精定位)</div>
+  <div class="node" style="left:580px;top:240px;">直线查找(角度查找)</div>
+
+  
+  <!-- Merge -->
+  <div class="node" style="left:380px;top:340px;">单点映射对位</div>
+  <div class="node" style="left:380px;top:400px;">格式化</div>
+  <div class="node end" style="left:380px;top:470px;">发送数据</div>
+</div>
+</body>
+</html>

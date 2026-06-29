@@ -1,0 +1,52 @@
+# 标量基本参数（int / float / string / bool）的输入输出
+
+## XML（Filter 节点放在 `<模块名>.xml` 的 Input 或 Output Category）
+
+```xml
+<!-- Input -->
+<Filter Name="InputIntParam"    ValueType="int"    IsForce="false" isShow="true" AccessMode="RO"/>
+<Filter Name="InputFloatParam"  ValueType="float"  IsForce="false" isShow="true" AccessMode="RO"/>
+<Filter Name="InputStringParam" ValueType="string" IsForce="false" isShow="true" AccessMode="RO"/>
+<Filter Name="InputBoolParam"   ValueType="bool"   IsForce="false" isShow="true" AccessMode="RO"/>
+
+<!-- Output -->
+<Filter Name="OutValueInt"    ValueType="int"    IsForce="true" isShow="true" AccessMode="RW"/>
+<Filter Name="OutValueFloat"  ValueType="float"  IsForce="true" isShow="true" AccessMode="RW"/>
+<Filter Name="OutValueString" ValueType="string" IsForce="true" isShow="true" AccessMode="RW"/>
+<Filter Name="OutValueBool"   ValueType="bool"   IsForce="true" isShow="true" AccessMode="RW"/>
+```
+
+## C++ 读输入
+
+```cpp
+// 真实签名: VM_M_GetInt(hInput, szName, nIndex, &val, &count) — 5 参带 nIndex
+int nCount = 0;
+int nInputInt = 0;
+int err = VM_M_GetInt(hInput, "InputIntParam", 0, &nInputInt, &nCount);
+if (err != IMVS_EC_OK || nCount <= 0) {
+    MLOG_ERROR(m_nModuleId, "Get InputIntParam failed: 0x%x count=%d", err, nCount);
+    return IMVS_EC_PARAM;
+}
+
+float fInputFloat = 0.0f;
+VM_M_GetFloat(hInput, "InputFloatParam", 0, &fInputFloat, &nCount);
+
+// VM_M_GetString: (hInput, szName, nIndex, pBuff, nBuffLen, &pDataLen, &pCount)
+char szBuf[1024] = {0};
+int nDataLen = 0;
+VM_M_GetString(hInput, "InputStringParam", 0, szBuf, sizeof(szBuf), &nDataLen, &nCount);
+```
+
+## C++ 写输出
+
+```cpp
+// 真实签名: VM_M_SetInt(hOutput, szName, nIndex, value)
+VM_M_SetInt(hOutput,    "OutValueInt",    0, 42);
+VM_M_SetFloat(hOutput,  "OutValueFloat",  0, 3.14f);
+
+// VM_M_SetString: (hOutput, szName, nIndex, pValue) — 4 参,不传 length
+std::string sOut = u8"处理完成";
+VM_M_SetString(hOutput, "OutValueString", 0, sOut.c_str());
+```
+
+`bool` 用 int (0/1) 桥接读写。

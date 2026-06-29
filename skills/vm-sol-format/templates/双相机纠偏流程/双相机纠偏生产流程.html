@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>双相机纠偏生产流程</title>
+<style>
+  body { font-family: "Microsoft YaHei", sans-serif; background: #fff; margin: 24px; }
+  h2 { color: #3A2B7C; margin: 0 0 16px 4px; font-weight: 600; }
+  .flow { position: relative; width: 800px; height: 820px; }
+  .node {
+    position: absolute; width: 140px; height: 28px; line-height: 28px;
+    background: #ECE9F7; border: 1.5px solid #6E5BC7; color: #3A2B7C;
+    border-radius: 8px; text-align: center; font-size: 14px; box-sizing: border-box;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.06);
+  }
+  .node.end { background: #4A3FB5; color: #fff; border-color: #4A3FB5; font-weight: 600; }
+  svg { position: absolute; top: 0; left: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<h2>双相机纠偏生产流程</h2>
+<div class="flow">
+  <svg width="800" height="820">
+    <defs>
+      <marker id="arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+        <path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/>
+      </marker>
+    </defs>
+    <!-- LEFT col: 3主相机 → 4粗定位1 → 13位置修正1 → 18角点定位1 → 16标定转换1 -->
+    <line x1="100" y1="58"  x2="100" y2="98"  stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="100" y1="128" x2="100" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="100" y1="198" x2="100" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="100" y1="268" x2="100" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- RIGHT col: 14副相机 → 15粗定位2 → 9位置修正2 → 0角点定位2 → 7标定转换2 -->
+    <line x1="460" y1="58"  x2="460" y2="98"  stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="460" y1="128" x2="460" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="460" y1="198" x2="460" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="460" y1="268" x2="460" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+
+    <!-- 16标定转换1 → 8点测量1 (left to center) -->
+    <polyline points="100,338 100,370 280,370 280,388" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+    <!-- 7标定转换2 → 8点测量1 (right to center) -->
+    <polyline points="460,338 460,370 280,370 280,388" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#arr)"/>
+
+    <!-- 8点测量1 → 12标定转换3 → 17单点纠偏1 → 5格式化2 → 6发送数据2 -->
+    <line x1="280" y1="418" x2="280" y2="458" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="280" y1="488" x2="280" y2="528" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="280" y1="558" x2="280" y2="598" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+    <line x1="280" y1="628" x2="280" y2="668" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#arr)"/>
+  </svg>
+  <!-- Left column (3主相机) -->
+  <div class="node" style="left:30px;top:30px;">图像源(主相机)</div>
+  <div class="node" style="left:30px;top:100px;">轮廓匹配(粗定位)</div>
+  <div class="node" style="left:30px;top:170px;">位置修正</div>
+  <div class="node" style="left:30px;top:240px;">线线测量(角点查找)</div>
+  <div class="node" style="left:30px;top:310px;">标定转换</div>
+  <!-- Right column (14副相机) -->
+  <div class="node" style="left:390px;top:30px;">图像源(副相机)</div>
+  <div class="node" style="left:390px;top:100px;">轮廓匹配(粗定位)</div>
+  <div class="node" style="left:390px;top:170px;">位置修正</div>
+  <div class="node" style="left:390px;top:240px;">线线测量(角点查找)</div>
+  <div class="node" style="left:390px;top:310px;">标定转换</div>
+  <!-- Merged flow -->
+  <div class="node" style="left:210px;top:390px;">点点测量</div>
+  <div class="node" style="left:210px;top:460px;">标定转换</div>
+  <div class="node" style="left:210px;top:530px;">单点纠偏</div>
+  <div class="node" style="left:210px;top:600px;">格式化</div>
+  <div class="node end" style="left:210px;top:670px;">发送数据</div>
+</div>
+</body>
+</html>

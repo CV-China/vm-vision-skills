@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>单相机抓取-偏心旋转 — 定位方案</title>
+<style>
+*{box-sizing:border-box}body{font-family:-apple-system,'Microsoft YaHei',sans-serif;max-width:960px;margin:0 auto;padding:20px;background:#f5f7fa;color:#333;line-height:1.6}.header{background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;padding:22px 28px;border-radius:12px;margin-bottom:20px}.header h1{margin:0 0 4px;font-size:20px}.header .sub{font-size:13px;opacity:.8}.card{background:#fff;border-radius:10px;padding:20px 24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}.card h2{margin:0 0 14px;font-size:16px;color:#1a73e8;padding-bottom:8px;border-bottom:2px solid #e8f0fe}.card h3{font-size:14px;color:#555;margin:14px 0 8px}.phase{border-left:4px solid;padding:12px 16px;margin-bottom:10px;border-radius:0 6px 6px 0}.pc{border-color:#1a73e8;background:#f0f4ff}.pt{border-color:#0f9d58;background:#f0faf3}.pp{border-color:#f57c00;background:#fff8f0}.ph{font-weight:700;font-size:14px;margin-bottom:8px}.pc .ph{color:#1a73e8}.pt .ph{color:#0f9d58}.pp .ph{color:#f57c00}.flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:8px 0}.fb{padding:7px 11px;border-radius:6px;font-size:12px;text-align:center;min-width:68px;line-height:1.4;border:1.5px solid}.fb-b{background:#e8f0fe;border-color:#4285f4;color:#1a73e8}.fb-g{background:#e6f4ea;border-color:#34a853;color:#188038}.fb-o{background:#fef3e2;border-color:#fbbc04;color:#e37400}.fb-r{background:#fce8e6;border-color:#ea4335;color:#c5221f}.fa{color:#aaa;font-size:16px}.steps{list-style:none;padding:0;margin:0}.steps li{display:flex;gap:10px;margin-bottom:7px;font-size:13px;align-items:flex-start}.sn{background:#1a73e8;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}.sn-g{background:#0f9d58}.sn-o{background:#f57c00}.cl{list-style:none;padding:0;margin:0}.cl li{padding:7px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;font-size:13px}.cl li::before{content:'☐';color:#1a73e8;font-size:14px;flex-shrink:0}.warn{background:#fef3e2;border-left:3px solid #f57c00;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}.tip{background:#e6f4ea;border-left:3px solid #0f9d58;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}th{background:#f1f3f4;padding:9px;text-align:left;font-weight:600}td{padding:9px;border-bottom:1px solid #e8eaed;vertical-align:top}tr:last-child td{border-bottom:none}.rl{list-style:none;padding:0;margin:0}.rl li{padding:4px 0;font-size:13px;color:#1a73e8}.rl li::before{content:'📄 '}
+</style>
+</head>
+<body>
+
+<!-- 元信息
+生成时间：2026-05-26 16:30
+模式：方案设计
+用户原始问题：单个固定相机的抓取场景方案，需要角度输出，不共轴，无标定板
+关键参数：
+  相机数量：单相机
+  安装方式：固定安装（Eye-to-Hand）
+  应用类型：抓取（Pick）
+  机构类型：XYR一体
+  旋转需求：有（需输出角度偏差）
+  工具共轴：不共轴（偏心）
+  标定条件：无标定板（使用产品特征标定）
+-->
+
+<div class="header">
+  <h1>🎯 单相机抓取-偏心旋转</h1>
+  <div class="sub">生成时间：2026-05-26 16:30 &nbsp;·&nbsp; 方案设计 &nbsp;·&nbsp; 定位引导</div>
+</div>
+
+<div class="card">
+  <h2>📋 场景分析</h2>
+  <p>单相机固定安装（Eye-to-Hand），相机固定于抓取工位上方，拍摄工作台上的物料，提取物料特征点和角度，实现定位引导抓取。机构为XYR一体，吸嘴/夹爪中心与R轴旋转中心不共轴（偏心），需要输出角度偏差进行旋转补偿。无标定板，使用物料自身特征进行十二点标定。</p>
+  <table>
+    <tr><th>关键参数</th><th>确认值</th></tr>
+    
+    <tr><td>相机数量</td><td>单相机</td></tr>
+    <tr><td>安装方式</td><td>固定安装（Eye-to-Hand，相机静止）</td></tr>
+    <tr><td>应用类型</td><td>抓取（Pick）</td></tr>
+    <tr><td>机构类型</td><td>XYR一体</td></tr>
+    <tr><td>旋转需求</td><td>有 — 需输出角度偏差，R轴旋转补偿</td></tr>
+    <tr><td>工具共轴</td><td>不共轴（偏心），需十二点标定标定旋转中心</td></tr>
+    <tr><td>标定条件</td><td>无标定板，使用产品特征进行标定</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>🗺️ 定位方案思路</h2>
+  <div class="flow">
+    <div class="fb fb-b">十二点标定<br><small>产品特征·9平移+3旋转</small></div>
+    <div class="fa">→</div>
+    <div class="fb fb-g">旋转中心标定</div>
+    <div class="fa">→</div>
+    <div class="fb fb-o">示教基准<br><small>抓取物理点+像素基准</small></div>
+    <div class="fa">→</div>
+    <div class="fb fb-r">生产：单点抓取</div>
+  </div>
+  <div class="tip">
+  <strong>方案要点</strong>：无标定板时，使用物料自身的稳定特征（圆孔、十字、棱角等）
+  作为标定参照物。由于工具不共轴，需要十二点标定（9平移+3旋转）标定旋转中心。
+  抓取时物料角度变化需通过旋转中心补偿，确保偏心工具准确抓取。
+</div>
+</div>
+
+<div class="card">
+  <h2>🔧 VM视觉流程图</h2>
+  <h3>标定流程</h3>
+<div style="position:relative;width:520px;height:580px;margin-bottom:16px;"><svg width="520" height="580" style="position:absolute;top:0;left:0;pointer-events:none;"><defs><marker id="calib" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/></marker></defs><line x1="120" y1="58" x2="120" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib)"/><line x1="120" y1="128" x2="120" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib)"/><line x1="120" y1="198" x2="120" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib)"/><line x1="120" y1="268" x2="120" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib)"/><line x1="120" y1="338" x2="120" y2="378" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib)"/><line x1="120" y1="408" x2="120" y2="448" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib)"/><polyline points="120,198 120,220 290,220 290,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#calib)"/><polyline points="290,268 290,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/><line x1="400" y1="58" x2="400" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib)"/><polyline points="400,128 400,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#calib)"/></svg><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:30px;width:140px;">图像源</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:100px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:170px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:240px;width:140px;">圆查找(精定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:210px;top:240px;width:140px;">直线查找(角度查找)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:310px;width:140px;">平移旋转标定</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:380px;width:140px;">格式化</div><div style="position:absolute;height:28px;line-height:28px;background:#4A3FB5;border:1.5px solid #4A3FB5;color:#fff;border-radius:8px;text-align:center;font-size:13px;font-weight:600;box-sizing:border-box;left:50px;top:450px;width:140px;">发送数据</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:330px;top:30px;width:140px;">接收数据</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:330px;top:100px;width:140px;">协议解析</div></div>
+<h3>生产流程</h3>
+<div style="position:relative;width:520px;height:510px;margin-bottom:16px;"><svg width="520" height="510" style="position:absolute;top:0;left:0;pointer-events:none;"><defs><marker id="prod" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/></marker></defs><line x1="170" y1="58" x2="170" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="170" y1="128" x2="170" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="170" y1="198" x2="170" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><polyline points="170,198 170,220 360,220 360,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#prod)"/><line x1="170" y1="268" x2="170" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><polyline points="360,268 360,285 170,285 170,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/><line x1="170" y1="338" x2="170" y2="378" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="170" y1="408" x2="170" y2="448" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/></svg><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:100px;top:30px;width:140px;">图像源</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:100px;top:100px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:100px;top:170px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:100px;top:240px;width:140px;">圆查找(精定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:280px;top:240px;width:140px;">直线查找(角度查找)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:100px;top:310px;width:140px;">单点抓取</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:100px;top:380px;width:140px;">格式化</div><div style="position:absolute;height:28px;line-height:28px;background:#4A3FB5;border:1.5px solid #4A3FB5;color:#fff;border-radius:8px;text-align:center;font-size:13px;font-weight:600;box-sizing:border-box;left:100px;top:450px;width:140px;">发送数据</div></div>
+</div>
+
+<div class="card">
+  <h2>⚙️ 操作要点</h2>
+  <div class="phase pc">
+  <div class="ph">▎标定阶段 — 十二点标定（使用产品特征）</div>
+  <ul class="steps">
+    <li><span class="sn">1</span><div><b>准备物料</b><br>将物料（产品）放置在工作台上，确保其在相机视野范围内。选择物料上稳定的特征点（圆孔、十字标记、棱角等）作为标定参照。</div></li>
+    <li><span class="sn">2</span><div><b>搭建标定方案</b><br>VM流程：图像源 → 轮廓匹配(粗定位) → 位置修正 → 圆查找(精定位) + 直线查找(角度查找) → 平移旋转标定。配置平移旋转标定模块：标定类型=平移旋转标定，相机模式=相机静止，自由度=选项2，平移次数=9，旋转次数=3。</div></li>
+    <li><span class="sn">3</span><div><b>平移标定（9点）</b><br>机构带着物料按Z字形等间距移动9个位置。每到位一个位置，PLC发送物理坐标（如 <code>C1,x,y,r</code>）触发视觉流程拍照，图像源采集特征点。平移过程中保持角度固定不变。</div></li>
+    <li><span class="sn">4</span><div><b>旋转标定（3点）</b><br>回到标定中心点（第5点位置），机构顺/逆时针旋转3次（建议旋转角度≥15°），XY坐标保持固定。每旋转一个角度，触发拍照提取特征。</div></li>
+    <li><span class="sn">5</span><div><b>查看标定结果</b><br>检查标定状态=1（成功），平移像素平均误差&lt;1像素，旋转像素平均误差&lt;1像素，角度旋转一致性=1或-1。确认标定文件正确生成并保存。</div></li>
+  </ul>
+</div>
+
+<div class="phase pt">
+  <div class="ph">▎示教阶段 — 建立抓取基准</div>
+  <ul class="steps">
+    <li><span class="sn-g">1</span><div><b>搭建生产方案</b><br>VM流程：图像源 → 轮廓匹配(粗定位) → 位置修正 → 圆查找(精定位) + 直线查找(角度查找) → 单点抓取 → 格式化 → 发送数据。</div></li>
+    <li><span class="sn-g">2</span><div><b>调整抓取位置</b><br>手动调整机构位置，使吸嘴/夹爪对准物料（以基准姿态对准）。记录此时机构的物理坐标为<b>示教抓取物理点</b>。</div></li>
+    <li><span class="sn-g">3</span><div><b>定位到拍照位</b><br>机构移动到拍照位置（建议为标定第5点），拍摄物料图像，获取<b>基准像素坐标</b>。</div></li>
+    <li><span class="sn-g">4</span><div><b>配置单点抓取模块</b><br>打开单点抓取模块参数配置：填写示教抓取物理点；填写/订阅基准图像像素点；点击"执行"单次执行；点击"创建基准"完成图像基准点设定。</div></li>
+    <li><span class="sn-g">5</span><div><b>绑定像素点</b><br>确认基准点创建成功后，将像素点绑定为运行图像点。若采用同一分支下来的特征点，则无需重新绑定。</div></li>
+  </ul>
+</div>
+
+<div class="phase pp">
+  <div class="ph">▎生产阶段 — 运行抓取</div>
+  <ul class="steps">
+    <li><span class="sn-o">1</span><div><b>确认拍照位一致</b><br>生产拍照位必须与示教拍照位一致（即标定第5点位置），工作距离保持不变。若拍照位有偏移，需在偏差计算中补偿。</div></li>
+    <li><span class="sn-o">2</span><div><b>触发生产流程</b><br>PLC发送触发指令（如 <code>T1</code>），视觉流程开始运行：取图→特征提取→单点抓取计算→输出结果。</div></li>
+    <li><span class="sn-o">3</span><div><b>结果输出</b><br>单点抓取模块输出抓取坐标（绝对坐标或相对偏差），经格式化后通过发送数据模块传送给PLC。机械手按照绝对坐标直接移动到抓取位置。</div></li>
+    <li><span class="sn-o">4</span><div><b>多角度验证</b><br>在多个旋转角度（0°、5°、10°、15°）下分别放置物料进行抓取验证，确认所有角度下定位精度一致。若角度越大误差越大，需排查旋转中心标定精度。</div></li>
+  </ul>
+</div>
+</div>
+
+<div class="card">
+  <h2>⚠️ 注意事项</h2>
+  <div class="warn">
+  <strong>⚠️ 无标定板注意事项</strong><br>
+  使用产品特征代替标定板时，必须确保所选特征在标定全程中稳定可重复提取。特征点的提取偏差直接影响标定精度，建议选择圆孔、十字交叉点等具有明确几何定义的特征。若产品批次间特征有差异，需重新标定。
+</div>
+<div class="warn">
+  <strong>⚠️ 旋转中心精度验证</strong><br>
+  工具不共轴时，旋转中心的标定精度至关重要。标定后必须验证旋转像素精度（应&lt;0.5像素），并在多个旋转角度下验证抓取精度。旋转中心偏差会被偏心距离放大，角度越大误差越明显。
+</div>
+<div class="warn">
+  <strong>⚠️ 拍照位与工作距离</strong><br>
+  生产拍照位必须与标定第5点一致，工作距离（相机到物料的高度）必须保持不变。工作距离变化会导致标定矩阵失效（缩放尺度变化），引入定位误差。
+</div>
+</div>
+
+<div class="card">
+  <h2>📚 参考文档</h2>
+  <ul class="rl">
+    <li>单相机常规抓取场景说明文档.md — §2 标定、§3 示教、§4 生产</li>
+    <li>相机旋转定位场景案例分析.md — §1 单相机旋转抓取场景、§5 总结</li>
+    <li>标定场景与原理.md — §4 常规十二点标定设计、§4.2 旋转中心归一化</li>
+    <li>生产计算原理概述.md — §2 单点抓取模型、§3 旋转补偿</li>
+  </ul>
+</div>
+
+</body>
+</html>

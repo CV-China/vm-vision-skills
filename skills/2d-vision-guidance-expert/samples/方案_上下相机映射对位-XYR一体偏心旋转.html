@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>上下相机单点映射对位 — XYR一体偏心旋转 — 定位方案</title>
+<style>
+*{box-sizing:border-box}body{font-family:-apple-system,'Microsoft YaHei',sans-serif;max-width:960px;margin:0 auto;padding:20px;background:#f5f7fa;color:#333;line-height:1.6}.header{background:linear-gradient(135deg,#1a73e8,#0d47a1);color:#fff;padding:22px 28px;border-radius:12px;margin-bottom:20px}.header h1{margin:0 0 4px;font-size:20px}.header .sub{font-size:13px;opacity:.8}.card{background:#fff;border-radius:10px;padding:20px 24px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,.08)}.card h2{margin:0 0 14px;font-size:16px;color:#1a73e8;padding-bottom:8px;border-bottom:2px solid #e8f0fe}.card h3{font-size:14px;color:#555;margin:14px 0 8px}.phase{border-left:4px solid;padding:12px 16px;margin-bottom:10px;border-radius:0 6px 6px 0}.pc{border-color:#1a73e8;background:#f0f4ff}.pt{border-color:#0f9d58;background:#f0faf3}.pp{border-color:#f57c00;background:#fff8f0}.ph{font-weight:700;font-size:14px;margin-bottom:8px}.pc .ph{color:#1a73e8}.pt .ph{color:#0f9d58}.pp .ph{color:#f57c00}.flow{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:8px 0}.fb{padding:7px 11px;border-radius:6px;font-size:12px;text-align:center;min-width:68px;line-height:1.4;border:1.5px solid}.fb-b{background:#e8f0fe;border-color:#4285f4;color:#1a73e8}.fb-g{background:#e6f4ea;border-color:#34a853;color:#188038}.fb-o{background:#fef3e2;border-color:#fbbc04;color:#e37400}.fb-r{background:#fce8e6;border-color:#ea4335;color:#c5221f}.fa{color:#aaa;font-size:16px}.steps{list-style:none;padding:0;margin:0}.steps li{display:flex;gap:10px;margin-bottom:7px;font-size:13px;align-items:flex-start}.sn{background:#1a73e8;color:#fff;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;margin-top:1px}.sn-g{background:#0f9d58}.sn-o{background:#f57c00}.cl{list-style:none;padding:0;margin:0}.cl li{padding:7px 0;border-bottom:1px solid #f0f0f0;display:flex;gap:8px;font-size:13px}.cl li::before{content:'☐';color:#1a73e8;font-size:14px;flex-shrink:0}.warn{background:#fef3e2;border-left:3px solid #f57c00;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}.tip{background:#e6f4ea;border-left:3px solid #0f9d58;padding:10px 14px;border-radius:0 6px 6px 0;margin:8px 0;font-size:13px}table{width:100%;border-collapse:collapse;font-size:13px;margin:8px 0}th{background:#f1f3f4;padding:9px;text-align:left;font-weight:600}td{padding:9px;border-bottom:1px solid #e8eaed;vertical-align:top}tr:last-child td{border-bottom:none}.rl{list-style:none;padding:0;margin:0}.rl li{padding:4px 0;font-size:13px;color:#1a73e8}.rl li::before{content:'📄 '}
+</style>
+</head>
+<body>
+
+<!-- 元信息
+生成时间：2026-05-26 16:49
+模式：方案设计
+用户原始问题：上下两个相机单点映射对位方案，上下相机均固定安装，有标定板，需要输出角度，xyr一体，不共轴
+关键参数：
+  相机数量：上下双相机
+  安装方式：上下均固定安装（相机静止）
+  应用类型：对位贴合
+  机构类型：XYR一体
+  旋转需求：需输出角度偏差
+  工具情况：偏心（不共轴）
+  标定条件：有标定板
+-->
+
+<div class="header">
+  <h1>🎯 上下相机单点映射对位 — XYR一体偏心旋转</h1>
+  <div class="sub">生成时间：2026-05-26 16:49 &nbsp;·&nbsp; 方案设计 &nbsp;·&nbsp; 定位引导</div>
+</div>
+
+<div class="card">
+  <h2>📋 场景分析</h2>
+  <p>上下双相机均固定安装，XYR一体机构，工具偏心（不共轴），有标定板，需输出XYR绝对坐标的对位贴合场景。</p>
+  <table>
+    <tr><th>关键参数</th><th>确认值</th></tr>
+    <tr><td>相机配置</td><td>上相机（固定安装）+ 下相机（固定安装）</td></tr>
+<tr><td>应用类型</td><td>上下对位贴合</td></tr>
+<tr><td>机构类型</td><td>XYR一体</td></tr>
+<tr><td>旋转需求</td><td>需输出角度偏差</td></tr>
+<tr><td>工具情况</td><td>偏心（不共轴）</td></tr>
+<tr><td>标定条件</td><td>有标定板</td></tr>
+<tr><td>标定方案</td><td>下相机十二点标定 + 上下相机映射标定</td></tr>
+<tr><td>生产计算模型</td><td>单点映射对位</td></tr>
+  </table>
+</div>
+
+<div class="card">
+  <h2>🗺️ 定位方案思路</h2>
+  <div class="flow">
+    <span class="fb fb-b">下相机十二点标定</span>
+<span class="fa">→</span>
+<span class="fb fb-b">上下相机映射标定</span>
+<span class="fa">→</span>
+<span class="fb fb-g">示教基准点</span>
+<span class="fa">→</span>
+<span class="fb fb-o">单点映射对位计算</span>
+<span class="fa">→</span>
+<span class="fb fb-r">输出XYR绝对坐标</span>
+  </div>
+  <div class="tip">💡 下相机十二点标定：因偏心+有旋转，需标定旋转中心。上下相机映射标定通过标定板统一两相机坐标系。示教记录贴合零位物理坐标。生产时综合上下相机特征输出XYR绝对坐标给机构。</div>
+</div>
+
+<div class="card">
+  <h2>🔧 VM视觉流程图</h2>
+  <h3>标定流程1：下相机平移旋转标定（十二点）</h3>
+<div style="position:relative;width:520px;height:580px;margin-bottom:16px;"><svg width="520" height="580" style="position:absolute;top:0;left:0;pointer-events:none;"><defs><marker id="calib1" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/></marker></defs><line x1="120" y1="58" x2="120" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib1)"/><line x1="120" y1="128" x2="120" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib1)"/><line x1="120" y1="198" x2="120" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib1)"/><line x1="120" y1="268" x2="120" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib1)"/><line x1="120" y1="338" x2="120" y2="378" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib1)"/><line x1="120" y1="408" x2="120" y2="448" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib1)"/><polyline points="120,198 120,220 290,220 290,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#calib1)"/><polyline points="290,268 290,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none"/><line x1="400" y1="58" x2="400" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib1)"/><polyline points="400,128 400,285 120,285 120,308" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#calib1)"/></svg><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:30px;width:140px;">图像源</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:100px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:170px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:240px;width:140px;">圆查找(精定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:210px;top:240px;width:140px;">直线查找(角度查找)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:310px;width:140px;">平移旋转标定</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:380px;width:140px;">格式化</div><div style="position:absolute;height:28px;line-height:28px;background:#4A3FB5;border:1.5px solid #4A3FB5;color:#fff;border-radius:8px;text-align:center;font-size:13px;font-weight:600;box-sizing:border-box;left:50px;top:450px;width:140px;">发送数据</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:330px;top:30px;width:140px;">接收数据</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:330px;top:100px;width:140px;">协议解析</div></div>
+<h3>标定流程2：上下相机映射标定</h3>
+<div style="position:relative;width:520px;height:660px;margin-bottom:16px;"><svg width="520" height="660" style="position:absolute;top:0;left:0;pointer-events:none;"><defs><marker id="calib2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/></marker></defs><line x1="120" y1="58" x2="120" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib2)"/><line x1="120" y1="198" x2="120" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib2)"/><line x1="120" y1="268" x2="120" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib2)"/><line x1="360" y1="58" x2="360" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib2)"/><line x1="360" y1="128" x2="360" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib2)"/><line x1="360" y1="198" x2="360" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib2)"/><line x1="360" y1="268" x2="360" y2="308" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib2)"/><polyline points="120,338 120,400 240,400 240,418" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#calib2)"/><polyline points="360,338 360,400 240,400" stroke="#6E5BC7" stroke-width="1.5" fill="none"/><line x1="240" y1="448" x2="240" y2="488" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib2)"/><line x1="240" y1="518" x2="240" y2="558" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#calib2)"/></svg><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:30px;width:140px;">图像源(下相机)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:170px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:240px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:50px;top:310px;width:140px;">四边形查找</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:290px;top:30px;width:140px;">图像源(上相机)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:290px;top:100px;width:140px;">缓存图像</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:290px;top:170px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:290px;top:240px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:290px;top:310px;width:140px;">四边形查找</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:170px;top:420px;width:140px;">相机映射</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:170px;top:490px;width:140px;">格式化</div><div style="position:absolute;height:28px;line-height:28px;background:#4A3FB5;border:1.5px solid #4A3FB5;color:#fff;border-radius:8px;text-align:center;font-size:13px;font-weight:600;box-sizing:border-box;left:170px;top:560px;width:140px;">发送数据</div></div>
+<h3>生产流程</h3>
+<div style="position:relative;width:720px;height:560px;margin-bottom:16px;"><svg width="720" height="560" style="position:absolute;top:0;left:0;pointer-events:none;"><defs><marker id="prod" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#6E5BC7"/></marker></defs><line x1="100" y1="58" x2="100" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="100" y1="128" x2="100" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="100" y1="198" x2="100" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><polyline points="100,198 100,220 280,220 280,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#prod)"/><polyline points="100,268 100,310 450,310 450,338" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#prod)"/><polyline points="280,268 280,285 100,285" stroke="#6E5BC7" stroke-width="1.5" fill="none"/><line x1="450" y1="58" x2="450" y2="98" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="450" y1="128" x2="450" y2="168" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="450" y1="198" x2="450" y2="238" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><polyline points="450,198 450,220 630,220 630,238" stroke="#6E5BC7" stroke-width="1.5" fill="none" marker-end="url(#prod)"/><line x1="450" y1="268" x2="450" y2="338" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><polyline points="630,268 630,285 450,285" stroke="#6E5BC7" stroke-width="1.5" fill="none"/><line x1="450" y1="368" x2="450" y2="398" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/><line x1="450" y1="428" x2="450" y2="468" stroke="#6E5BC7" stroke-width="1.5" marker-end="url(#prod)"/></svg><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:30px;top:30px;width:140px;">图像源(下相机)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:30px;top:100px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:30px;top:170px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:30px;top:240px;width:140px;">圆查找(精定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:200px;top:240px;width:140px;">直线查找(角度查找)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:380px;top:30px;width:140px;">图像源(上相机)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:380px;top:100px;width:140px;">轮廓匹配(粗定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:380px;top:170px;width:140px;">位置修正</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:380px;top:240px;width:140px;">圆查找(精定位)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:560px;top:240px;width:140px;">直线查找(角度查找)</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:380px;top:340px;width:140px;">单点映射对位</div><div style="position:absolute;height:28px;line-height:28px;background:#ECE9F7;border:1.5px solid #6E5BC7;color:#3A2B7C;border-radius:8px;text-align:center;font-size:13px;box-sizing:border-box;left:380px;top:400px;width:140px;">格式化</div><div style="position:absolute;height:28px;line-height:28px;background:#4A3FB5;border:1.5px solid #4A3FB5;color:#fff;border-radius:8px;text-align:center;font-size:13px;font-weight:600;box-sizing:border-box;left:380px;top:470px;width:140px;">发送数据</div></div>
+</div>
+
+<div class="card">
+  <h2>⚙️ 操作要点</h2>
+  <div class="phase pc">
+  <div class="ph">标定阶段</div>
+  <h3>下相机平移旋转标定（十二点）</h3>
+  <ol class="steps">
+    <li><span class="sn">1</span>机械手吸取标定板移动至下相机视野内，调整至清晰对焦</li>
+    <li><span class="sn">2</span>配置平移旋转标定模块：相机静止模式、标定类型选"平移旋转标定"（因不共轴偏心）、平移9次+旋转3次</li>
+    <li><span class="sn">3</span>机械手按Z字路径平移9次，每到位一次PLC发送物理坐标触发拍照，保持R轴角度固定</li>
+    <li><span class="sn">4</span>回到第5点，R轴旋转3个角度（如-10°、0°、+10°），XY坐标保持不动</li>
+    <li><span class="sn">5</span>检查标定结果：标定状态=1，平移像素误差&lt;1px，旋转像素误差&lt;0.5px，角度旋转一致性正确</li>
+    <li><span class="sn">6</span>保存下相机标定文件，供生产时单点映射对位模块加载</li>
+  </ol>
+  <h3>上下相机映射标定</h3>
+  <ol class="steps">
+    <li><span class="sn">7</span>将标定板放在上相机视野内（特征面朝上），上相机拍照采集图像特征</li>
+    <li><span class="sn">8</span>机械手吸取标定板（记录此时物理坐标作为示教点），只平移不旋转地移动到下相机视野内</li>
+    <li><span class="sn">9</span>下相机拍照采集标定板图像特征</li>
+    <li><span class="sn">10</span>搭建相机映射流程：左右分别为上下相机采集的对应特征点，使用"相机映射"模块计算映射矩阵</li>
+    <li><span class="sn">11</span>保存映射标定文件，供生产时单点映射对位模块加载</li>
+  </ol>
+</div>
+<div class="phase pt">
+  <div class="ph">示教阶段</div>
+  <ol class="steps">
+    <li><span class="sn sn-g">1</span>记录映射标定第8步中机械手吸取标定板时的物理坐标（称为"示教物理点"）</li>
+    <li><span class="sn sn-g">2</span>将该物理坐标填入单点映射对位模块的"示教物理点"参数</li>
+  </ol>
+</div>
+<div class="phase pp">
+  <div class="ph">生产阶段</div>
+  <ol class="steps">
+    <li><span class="sn sn-o">1</span>机械手吸取物料移动至下相机拍照位（与标定时下相机拍照位一致），触发下相机拍照</li>
+    <li><span class="sn sn-o">2</span>下相机流程提取物料对象特征点（圆+角度），通过全局变量传递给上相机流程</li>
+    <li><span class="sn sn-o">3</span>机械手移动至上相机拍照位（与标定时上相机拍照位一致），触发上相机拍照</li>
+    <li><span class="sn sn-o">4</span>上相机流程提取目标特征点（目标位置+角度），传入单点映射对位模块</li>
+    <li><span class="sn sn-o">5</span>单点映射对位模块内部加载下相机标定文件+映射标定文件，输出XYR绝对坐标</li>
+    <li><span class="sn sn-o">6</span>格式化模块订阅坐标结果，通过发送数据模块将XYR发送给PLC，机构执行对位</li>
+  </ol>
+</div>
+</div>
+
+<div class="card">
+  <h2>⚠️ 注意事项</h2>
+  <div class="warn">⚠️ 映射标定过程中，标定板从下相机位移动到上相机位时，机构R轴只能平移不能旋转。若发生旋转，映射关系将被破坏，需重新标定。</div>
+<div class="warn">⚠️ 生产时上下相机的拍照位必须与标定时保持一致（同一位姿、同一工作距离）。拍照位变化会直接破坏映射关系，导致对位失败。</div>
+<div class="warn">⚠️ 单点映射对位模块需要加载两个标定文件：下相机平移旋转标定文件 + 上下相机映射标定文件。同时需正确配置示教物理点，否则输出坐标会偏。</div>
+</div>
+
+<div class="card">
+  <h2>📚 参考文档</h2>
+  <ul class="rl">
+    <li>assets/2.生产计算原理/上下相机映射对位场景说明文档.md</li>
+<li>assets/1.标定原理/标定场景与原理.md</li>
+<li>assets/1.标定原理/机器视觉工程师课程_标定与定位技术.md</li>
+  </ul>
+</div>
+
+</body>
+</html>
