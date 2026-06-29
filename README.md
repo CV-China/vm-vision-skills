@@ -1,6 +1,6 @@
 # VM Vision Skills
 
-VisionMaster机器视觉全能工具包 —— 海康机器人 VM 用户的一站式技能套件。
+VisionMaster机器视觉全能工具包 —— 海康机器人VM用户的一站式技能套件。
 
 ## 技能架构
 
@@ -10,35 +10,35 @@ vm-vision-skills
 ├── vm-algorithm-module-builder  # 算法模块构建
 ├── vm-sol-format                # 方案格式化 ◄──────────┐
 ├── vm-sol-structure             # 方案结构解析 ◄────────┤
-├── 2d-vision-guidance-expert    # 2D 视觉定位引导 ★ ───┘
+├── 2d-vision-guidance-expert    # 2D视觉定位引导 ★ ───┘
 └── vm-comprehensive-optimizer   # 全方位性能优化总控台 ★
     ├── vm-execution-time-analyzer  # 耗时分析
     ├── vm-script-protection        # 脚本防护优化
-    ├── vtune-analyzer              # VTune 性能分析 (CPU)
-    └── perfview-analyzer           # PerfView 内存分析
+    ├── vtune-analyzer              # VTune性能分析 (CPU)
+    └── perfview-analyzer           # PerfView内存分析
 ```
 
 > - **★ 总控台**：`vm-comprehensive-optimizer` 按需组合四个子技能，输出含交叉关联分析和优先级排序的综合优化报告
-> - **★ 定位引导**：`2d-vision-guidance-expert` 在分析 .sol 方案时，自动调用 `vm-sol-format` 和 `vm-sol-structure` 进行方案解析
+> - **★ 定位引导**：`2d-vision-guidance-expert` 在分析 .sol方案时，自动调用 `vm-sol-format` 和 `vm-sol-structure` 进行方案解析
 
 ### 技能详情
 
 | 技能名称 | 功能描述 |
 |---------|---------|
 | `vm-script-tutor` | VM 2D C# 脚本编程辅助，提供可直接使用的脚本代码 |
-| `vm-algorithm-module-builder` | VM 算法模块构建与部署，支持模块校验和一键部署 |
-| **`2d-vision-guidance-expert`** | **2D 机器视觉定位引导专家**（标定+生产计算） |
-| ↳ `vm-sol-format` | VM 方案 .sol 文件格式化 |
-| ↳ `vm-sol-structure` | VM 方案 .sol 文件结构解析 |
+| `vm-algorithm-module-builder` | VM算法模块构建与部署，支持模块校验和一键部署 |
+| **`2d-vision-guidance-expert`** | **2D机器视觉定位引导专家**（标定+生产计算） |
+| ↳ `vm-sol-format` | VM方案 .sol文件格式化 |
+| ↳ `vm-sol-structure` | VM方案 .sol文件结构解析 |
 | **`vm-comprehensive-optimizer`** | **全方位性能优化总控台**，多维联动分析 |
-| ↳ `vm-execution-time-analyzer` | VM 方案耗时分析，定位性能瓶颈 |
+| ↳ `vm-execution-time-analyzer` | VM方案耗时分析，定位性能瓶颈 |
 | ↳ `vm-script-protection` | 脚本防护优化，异常处理 + 代码防护 |
-| ↳ `vtune-analyzer` | Intel VTune CPU 热点分析 |
-| ↳ `perfview-analyzer` | PerfView + xperf 非托管内存分析 |
+| ↳ `vtune-analyzer` | Intel VTune CPU热点分析 |
+| ↳ `perfview-analyzer` | PerfView + xperf非托管内存分析 |
 
 ## 一键安装
 
-在 Claude Code 中运行以下命令：
+在Claude Code中运行以下命令：
 
 ```bash
 /plugin install github:CV-China/vm-vision-skills
@@ -50,12 +50,12 @@ vm-vision-skills
 # 克隆到插件目录
 git clone https://github.com/CV-China/vm-vision-skills.git
 
-# Claude Code 会自动发现 skills/ 目录下的所有技能
+# Claude Code会自动发现skills/ 目录下的所有技能
 ```
 
 ## 触发关键词
 
-安装后，Claude Code 会自动加载全部 10 个技能。以下是各技能的触发关键词：
+安装后，Claude Code会自动加载全部10个技能。以下是各技能的触发关键词：
 
 ### vm-script-tutor（脚本编程）
 `VM脚本` `编写脚本` `C#脚本` `脚本开发` `脚本编写` `自定义脚本` `UserScript` `模块参数` `全局变量` `图像处理脚本` `VM编程` `脚本代码` `脚本示例`
@@ -93,10 +93,10 @@ git clone https://github.com/CV-China/vm-vision-skills.git
 
 ## 依赖要求
 
-- **vm-script-protection**: 需要 .NET Framework 4.6.1+ Runtime，CLI 工具已打包在 `tools/` 目录中
-- **vtune-analyzer**: 需要安装 Intel VTune Profiler
-- **perfview-analyzer**: 需要安装 PerfView 和 Windows Performance Toolkit (xperf)
-- 部分技能涉及 Windows 专属工具，建议在 Windows 环境下使用
+- **vm-script-protection**: 需要 .NET Framework 4.6.1+ Runtime，CLI工具已打包在 `tools/` 目录中
+- **vtune-analyzer**: 需要安装Intel VTune Profiler
+- **perfview-analyzer**: 需要安装PerfView和Windows Performance Toolkit (xperf)
+- 部分技能涉及Windows专属工具，建议在Windows环境下使用
 
 ## 维护指南
 
