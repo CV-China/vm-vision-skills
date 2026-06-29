@@ -62,7 +62,7 @@ git push -u origin main
 
 ```
 # 步骤1：添加市场源
-/plugin marketplace add github:CV-China/vm-vision-skills
+/plugin marketplace add CV-China/vm-vision-skills
 
 # 步骤2：安装插件
 /plugin install vm-vision-skills
@@ -184,7 +184,7 @@ git tag v1.1.0
 git push origin v1.1.0
 ```
 
-用户可以通过指定版本安装：先 `/plugin marketplace add github:CV-China/vm-vision-skills`，再 `/plugin install vm-vision-skills@v1.1.0`
+用户可以通过指定版本安装：先 `/plugin marketplace add CV-China/vm-vision-skills`，再 `/plugin install vm-vision-skills@v1.1.0`
 
 ---
 
@@ -205,7 +205,7 @@ Claude Code会定期检查已安装插件的更新。当检测到新版本时，
 或重新安装（会覆盖）：
 
 ```
-/plugin marketplace add github:CV-China/vm-vision-skills
+/plugin marketplace add CV-China/vm-vision-skills
 /plugin install vm-vision-skills
 ```
 

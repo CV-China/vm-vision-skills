@@ -42,7 +42,7 @@ vm-vision-skills
 
 ```bash
 # 步骤1：添加市场源
-/plugin marketplace add github:CV-China/vm-vision-skills
+/plugin marketplace add CV-China/vm-vision-skills
 
 # 步骤2：安装插件
 /plugin install vm-vision-skills
