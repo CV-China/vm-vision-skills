@@ -38,35 +38,21 @@ vm-vision-skills
 
 ## 安装
 
-**Windows（CMD）：**
-
-```bash
-cd %USERPROFILE%\.claude\skills
-git clone https://github.com/CV-China/vm-vision-skills.git
-```
-
-**Mac / Linux：**
-
 ```bash
 cd ~/.claude/skills
 git clone https://github.com/CV-China/vm-vision-skills.git
 ```
 
-重启 Claude Code 即可生效。启动时自动递归扫描 `skills/` 目录下所有 `SKILL.md`。
+重启 Claude Code 即可生效。
 
 ## 更新
 
 ```bash
-# Windows（CMD）
-cd %USERPROFILE%\.claude\skills\vm-vision-skills
-git pull
-
-# Mac / Linux
 cd ~/.claude/skills/vm-vision-skills
 git pull
 ```
 
-拉取后重启 Claude Code 即可加载最新技能。
+重启 Claude Code 即可加载最新技能。
 
 ## 触发关键词
 

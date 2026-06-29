@@ -1,14 +1,7 @@
 **@所有人** VM Vision Skills 已上线，安装后即可在 Claude Code 中使用 10 个机器视觉技能 🎉
 
-**📦 安装（两行命令）：**
+**📦 安装：**
 
-Windows（CMD）：
-```
-cd %USERPROFILE%\.claude\skills
-git clone https://github.com/CV-China/vm-vision-skills.git
-```
-
-Mac / Linux：
 ```
 cd ~/.claude/skills
 git clone https://github.com/CV-China/vm-vision-skills.git
@@ -23,7 +16,7 @@ git clone https://github.com/CV-China/vm-vision-skills.git
 **🔄 后续更新：**
 
 ```
-cd %USERPROFILE%\.claude\skills\vm-vision-skills
+cd ~/.claude/skills/vm-vision-skills
 git pull
 ```
 

@@ -57,22 +57,15 @@ git push -u origin main
 ## 二、用户安装（首次）
 
 ```bash
-# 1. 进入 Claude Code skills 目录
-cd %USERPROFILE%\.claude\skills
-
-# 2. 克隆仓库
+cd ~/.claude/skills
 git clone https://github.com/CV-China/vm-vision-skills.git
-
-# 3. 重启 Claude Code 即可生效
 ```
 
-> 💡 直接在 skills 目录下 clone，Claude Code 启动时自动递归扫描所有 `SKILL.md`，无需额外复制。
->
+重启 Claude Code 即可生效。
+
 > ⚠️ **为何不用 `/plugin install`？**  
 > Claude Code 2.1.195 在 Windows 上执行 `/plugin marketplace add` 时存在 rename 竞态 Bug：  
-> 大仓库（本仓库 400+ 文件）clone 后 rename 临时目录时触发 `EPERM: operation not permitted`。  
-> 这是 Claude Code 内部 Node.js `fs.rename()` 在 Windows 上的已知问题（文件数多时 Defender/Git 锁未释放），  
-> 非本仓库配置问题。等待 Claude Code 修复此 Bug 后可恢复插件市场安装方式。
+> 大仓库（本仓库 400+ 文件）clone 后 rename 临时目录时触发 `EPERM: operation not permitted`。
 
 ### 安装后验证
 
@@ -164,12 +157,11 @@ git push origin v1.1.0
 ## 四、用户更新（已有安装）
 
 ```bash
-# 1. 进入仓库目录，拉取最新代码
-cd %USERPROFILE%\.claude\skills\vm-vision-skills
+cd ~/.claude/skills/vm-vision-skills
 git pull
-
-# 2. 重启 Claude Code
 ```
+
+重启 Claude Code 即可加载最新技能。
 
 ---
 
