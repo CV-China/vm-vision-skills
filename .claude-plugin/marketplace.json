@@ -1,0 +1,32 @@
+{
+  "name": "vm-vision-skills",
+  "id": "vm-vision-skills",
+  "owner": {
+    "name": "CV-China"
+  },
+  "metadata": {
+    "description": "VisionMaster机器视觉全能工具包：包含VM方案脚本编程、算法模块构建，以及两大总控台——2D视觉定位引导和全方位性能优化，共10大技能。海康机器人VM用户的一站式技能套件。",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "vm-vision-skills",
+      "source": "./",
+      "description": "VisionMaster机器视觉全能工具包：10大技能覆盖脚本编程、算法模块构建、2D视觉定位引导、方案解析、性能优化（耗时/脚本防护/VTune CPU/PerfView内存）",
+      "version": "1.0.0",
+      "author": {
+        "name": "CV-China"
+      },
+      "keywords": [
+        "visionmaster",
+        "machine-vision",
+        "海康机器人",
+        "VM",
+        "2d-vision",
+        "vtune",
+        "性能优化"
+      ],
+      "category": "domain"
+    }
+  ]
+}

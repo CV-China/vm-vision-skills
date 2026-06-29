@@ -47,10 +47,13 @@ vm-vision-skills
 或者手动安装：
 
 ```bash
-# 克隆到插件目录
+# 1. 克隆仓库
 git clone https://github.com/CV-China/vm-vision-skills.git
 
-# Claude Code会自动发现skills/ 目录下的所有技能
+# 2. 将 skills 子目录下的所有技能文件夹复制到 Claude Code skills 目录
+cp -r vm-vision-skills/skills/* "$HOME/.claude/skills/"
+
+# 3. 重启 Claude Code 即可生效
 ```
 
 ## 触发关键词

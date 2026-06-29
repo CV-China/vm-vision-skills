@@ -69,12 +69,31 @@ Claude Code会自动克隆仓库、注册技能，安装完成后即可使用。
 ### 方式B：手动安装
 
 ```bash
-# 克隆到Claude Code插件市场目录
-git clone https://github.com/CV-China/vm-vision-skills.git \
-  "$HOME/.claude/plugins/marketplaces/vm-vision-skills"
+# 1. 克隆仓库
+git clone https://github.com/CV-China/vm-vision-skills.git
 
-# 重启Claude Code或重新加载技能
+# 2. 将 skills 子目录下的所有技能文件夹复制到 Claude Code skills 目录
+cp -r vm-vision-skills/skills/* "$HOME/.claude/skills/"
+
+# 3. 重启 Claude Code 即可生效
 ```
+
+安装后 `~/.claude/skills/` 目录结构：
+```
+skills/
+├── 2d-vision-guidance-expert/   # 每个技能一个文件夹
+├── perfview-analyzer/
+├── vm-algorithm-module-builder/
+├── vm-comprehensive-optimizer/
+├── vm-execution-time-analyzer/
+├── vm-script-protection/
+├── vm-script-tutor/
+├── vm-sol-format/
+├── vm-sol-structure/
+└── vtune-analyzer/
+```
+
+每个技能文件夹包含一个 `SKILL.md`（含 YAML 头部元数据），Claude Code 启动时会自动扫描 `skills/` 目录并加载。
 
 ### 安装后验证
 
